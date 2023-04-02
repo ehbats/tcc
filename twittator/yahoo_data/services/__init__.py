@@ -1,1 +1,3 @@
-from poc_get_data import get_price_data
+from poc_get_data import GetPriceData
+from momentum import GetMomentumIndicators
+from poc_calculate_indicators import GenerateTechnicalIndicators

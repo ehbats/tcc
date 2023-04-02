@@ -4,6 +4,7 @@ from datetime import datetime
 
 class GetPriceData():
     def get_price_data(
+            self,
             ticker: str, 
             start_date: str, 
             end_date: str = datetime.now()
@@ -17,7 +18,6 @@ class GetPriceData():
             start = start_date, 
             end = end_date,
             )
-        print(ticker_historical_prices)
         df['High'] = ticker_historical_prices['High']
         df['Low'] = ticker_historical_prices['Low']
         df['Open'] = ticker_historical_prices['Open']
