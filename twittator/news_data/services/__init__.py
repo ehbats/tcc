@@ -1,0 +1,1 @@
+from poc_get_news import GetNewsData
