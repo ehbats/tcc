@@ -1,1 +1,1 @@
-from poc_get_tweets import GetTwitterData
+from get_twitter_data import GetTwitterData

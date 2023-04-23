@@ -1,4 +1,4 @@
-from poc_yahoo_data import GetPriceData
+from get_price_data import GetPriceData
 import pandas as pd
 from ta import trend
 from ta import momentum
