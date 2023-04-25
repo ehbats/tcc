@@ -1,4 +1,6 @@
-from poc_get_tweets import GetTwitterData
+import sys, os
+sys.path.append(os.path.abspath("."))
+from twitter_data.services.get_twitter_data import GetTwitterData
 
 twitter_data = GetTwitterData()
 

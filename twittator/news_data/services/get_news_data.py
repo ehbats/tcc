@@ -22,15 +22,7 @@ class GetNewsData():
             base_url = f'{base_url}headlines/section/topic/BUSINESS?'
         
         final_url = f'{base_url}hl={language}&gl={country}&ceid={ceid}'
-        print(final_url)
+
         feed = feedparser.parse(final_url)
 
         return feed
-
-# rss_url = "https://news.google.com/rss/search?q=EXEMPLO&hl=pt-BR&gl=BR&ceid=PT:br"
-# feed = feedparser.parse(rss_url)
-
-# for entry in feed.entries:
-#     print(entry.title)
-#     print(entry.summary)
-#     print()
