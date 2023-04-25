@@ -26,11 +26,3 @@ class GetNewsData():
         feed = feedparser.parse(final_url)
 
         return feed
-
-# rss_url = "https://news.google.com/rss/search?q=EXEMPLO&hl=pt-BR&gl=BR&ceid=PT:br"
-# feed = feedparser.parse(rss_url)
-
-# for entry in feed.entries:
-#     print(entry.title)
-#     print(entry.summary)
-#     print()

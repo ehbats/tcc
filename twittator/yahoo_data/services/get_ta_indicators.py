@@ -1,11 +1,14 @@
-from get_price_data import GetPriceData
+import sys, os
+sys.path.append(os.path.abspath("."))
+sys.path.append(os.path.abspath(".."))
+from yahoo_data.services.get_price_data import GetPriceData
 import pandas as pd
 from ta import trend
 from ta import momentum
 from ta import volume
 from datetime import datetime
 
-from momentum import GetMomentumIndicators
+from yahoo_data.services.momentum import GetMomentumIndicators
 
 ticker = 'MGLU3.SA'
 start_date = '2022-01-01'
