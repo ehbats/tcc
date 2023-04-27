@@ -22,7 +22,7 @@ class GetNewsData():
             base_url = f'{base_url}headlines/section/topic/BUSINESS?'
         
         final_url = f'{base_url}hl={language}&gl={country}&ceid={ceid}'
-
+        print(final_url)
         feed = feedparser.parse(final_url)
 
         return feed
