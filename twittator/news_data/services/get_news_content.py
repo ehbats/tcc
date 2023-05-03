@@ -3,35 +3,9 @@ from urllib.request import Request, urlopen
 
 from bs4 import BeautifulSoup
 from bs4.element import Comment
-from get_rss_data import GetNewsData
-
 
 class GetNewsContent:
-    def __init__(
-            self,
-            url
-            ):
-        
-        fake_request = Request(
-            url = url,
-            headers = {'User-Agent': 'Mozilla/5.0'}
-        )
-        
-        request = urlopen(fake_request).read()
-        
-        original_url = self.get_original_content_url(request)
-
-        fake_request = Request(
-            url = original_url,
-            headers = {'User-Agent': 'Mozilla/5.0'}
-        )
-
-        request = urlopen(fake_request).read()
-        soup = BeautifulSoup(request, 'html.parser')
-        texts = soup.find('article')
-        for p in texts.select("p"):
-            print(p.text)
-
+    
     def get_original_content_url(self, raw_html):
         soup = BeautifulSoup(raw_html, 'html.parser')
         texts = soup.findAll(string = True)
@@ -41,8 +15,17 @@ class GetNewsContent:
 
         return news_url
     
-    def get_original_content_text(self, raw_html):
-        pass
+    def get_original_content_text(self, original_url):
+        fake_request = self.generate_fake_request(original_url)
+        request = urlopen(fake_request).read()
+        soup = BeautifulSoup(request, 'html.parser')
+        texts = soup.find('article')
+
+        p_list = []
+        for p in texts.select("p"):
+            p_list.append(p.text)
+
+        return p_list
 
     def tag_visible(self, element):
         if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
@@ -62,8 +45,43 @@ class GetNewsContent:
             return True
         else:
             return False
+    
+    def generate_fake_request(
+            self, 
+            url: str
+            ):
+        return Request(
+            url = url,
+            headers = {'User-Agent': 'Mozilla/5.0'}
+        )
+    
+    def filter_relevant_content(
+            self, 
+            p_list: list
+            ):
+        filtered_p_list = []
 
-test_url = 'https://news.google.com/rss/articles/CBMioAFodHRwczovL3d3dy5zZXVkaW5oZWlyby5jb20vMjAyMy9maW5hbmNhcy1wZXNzb2Fpcy9uZW0tbnViYW5rLW5lbS1pbnRlci1lc3Nlcy1zYW8tb3MtMTAtbWVsaG9yZXMtY2FydG9lcy1kZS1jcmVkaXRvLXNlbS1hbnVpZGFkZS1lLXBhcmEtYWN1bXVsYXItbWlsaGFzLWRlLTIwMjMv0gEA?oc=5'
+        for p_text in p_list:
+            if len(p_text) > 120:
+                if len(filtered_p_list) < 3:
+                    filtered_p_list.append(p_text)
+                else:
+                    break
 
-instance = GetNewsContent(test_url)
+        return filtered_p_list
+    
+    def run(
+            self, 
+            url: str
+            ):
+        fake_request = self.generate_fake_request(url)
+        
+        request = urlopen(fake_request).read()
+        
+        original_url = self.get_original_content_url(request)
 
+        p_list = self.get_original_content_text(original_url)
+
+        final_p = self.filter_relevant_content(p_list)
+
+        return final_p
