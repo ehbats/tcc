@@ -1,5 +1,6 @@
 import sys, os
 sys.path.append(os.path.abspath("."))
+sys.path.append(os.path.abspath(".."))
 from lang_processing.services.get_polarization import GetPolarization
 
 instance = GetPolarization()
