@@ -70,7 +70,7 @@ class GetNewsContent:
 
         return filtered_p_list
     
-    def run(
+    def get_content(
             self, 
             url: str
             ):
@@ -84,4 +84,4 @@ class GetNewsContent:
 
         final_p = self.filter_relevant_content(p_list)
 
-        return final_p
+        return (final_p, url)
