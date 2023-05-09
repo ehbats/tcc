@@ -10,3 +10,8 @@ class Query(models.Model):
     country = models.TextField(default="")
     ceid = models.TextField(default="")
     url = models.TextField(default="")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['query','before','after','language'], name="unique_query_time_language")
+        ]

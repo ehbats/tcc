@@ -23,15 +23,14 @@ class PopulateNewsData(GetNewsData, GetNewsContent):
             ceid: str = 'PT:br',
     ):
         entries = self.get_news_data(query, topic, before, is_query, after, language, country, ceid).entries
-        query = Query(
+        query = Query.objects.get_or_create(
             query = query, 
             topic = topic, 
             before = before, 
             after = after, 
             language= language, 
             country = country, 
-            ceid = ceid)
-        query.save()
+            ceid = ceid)[0]
         index = 0
         for entry in entries:
             title = entry.title
@@ -43,18 +42,16 @@ class PopulateNewsData(GetNewsData, GetNewsContent):
             original_text = ' '.join(content[0])
             original_url = content[1]
             
-            news = News(
+            news = News.objects.get_or_create(
                 title = title,
                 rss_link = rss_link,
                 description = original_text,
                 source = source,
                 source_url = original_url,
                 pubdate = pub_date,
-            )
-
-            with transaction.atomic():
-                news.query_id = query.id
-                news.save()
+                query_id = query
+            )[0]
+            news.save()
 
             index += 1
             if index > 3:
