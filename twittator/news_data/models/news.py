@@ -14,3 +14,8 @@ class News(models.Model):
     source_url = models.TextField()
     pubdate = models.DateField()
     query_id = models.ForeignKey(Query, on_delete = models.CASCADE)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['title', 'source', 'pubdate'], name="unique_news")
+        ]

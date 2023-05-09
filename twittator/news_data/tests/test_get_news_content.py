@@ -8,4 +8,4 @@ test_url = 'https://news.google.com/rss/articles/CBMioAFodHRwczovL3d3dy5zZXVkaW5
 
 instance = GetNewsContent()
 
-print(instance.run(test_url))
+print(instance.get_content(test_url))
