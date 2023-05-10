@@ -31,6 +31,7 @@ class PopulateNewsData(GetNewsData, GetNewsContent):
             language= language, 
             country = country, 
             ceid = ceid)[0]
+        # query.save()
         index = 0
         for entry in entries:
             title = entry.title
@@ -51,7 +52,7 @@ class PopulateNewsData(GetNewsData, GetNewsContent):
                 pubdate = pub_date,
                 query_id = query
             )[0]
-            news.save()
+            # news.save()
 
             index += 1
             if index > 3:
