@@ -17,9 +17,9 @@ class GetFundData:
     ):
         # url = f'https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol=PETR4.SAO&apikey={key}'
 
-        url = f'https://www.alphavantage.co/query?function=TIME_SERIES_WEEKLY_ADJUSTED&symbol=PETR4.SAO&apikey={key}'
+        url = f'https://www.alphavantage.co/query?function=CASH_FLOW&symbol=MGLU.SAO&apikey={key}'
         
-        # url = f'https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=PETR4&apikey={key}'
+        # url = f'https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=MGLU3&apikey={key}'
 
         data = requests.get(url)
 
