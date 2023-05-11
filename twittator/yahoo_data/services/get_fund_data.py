@@ -4,27 +4,22 @@ import pandas as pd
 from datetime import datetime
 import requests
 import pprint
-load_dotenv()
-key = os.environ.get('ALPHA')
-
-
+import os
+import zipfile
+import io
 class GetFundData:
-    def __init__(
-            self,
-            ticker: str,
-            start_date: str,
-            end_date: str = datetime.now()
-    ):
-        # url = f'https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol=PETR4.SAO&apikey={key}'
+    def __init__(self):
+        years = range(2020,2023)
 
-        url = f'https://www.alphavantage.co/query?function=CASH_FLOW&symbol=MGLU.SAO&apikey={key}'
+        url_base = 'https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/'
         
-        # url = f'https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=MGLU3&apikey={key}'
+        year = '2023'
+        print(url_base + f"dfp_cia_aberta_{year}.zip")
+        download = requests.get(url_base + f"dfp_cia_aberta_{year}.zip")
 
-        data = requests.get(url)
+        zip = zipfile.ZipFile(download.content.decode())
+        zip.extractall()
 
-        json_data = data.json()
+        print(zip)
 
-        pprint.pprint(json_data)
-
-instance = GetFundData('PETR4.SA', '2020-01-01')
+instance = GetFundData()
