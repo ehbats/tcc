@@ -2,24 +2,57 @@ import os
 from dotenv import load_dotenv
 import pandas as pd
 from datetime import datetime
+import investpy
+import os
 import requests
 import pprint
-import os
-import zipfile
-import io
+
+key = os.environ.get('ALPHA')
+
 class GetFundData:
-    def __init__(self):
-        years = range(2020,2023)
-
-        url_base = 'https://dados.cvm.gov.br/dados/CIA_ABERTA/DOC/DFP/DADOS/'
+    def __init__(self, key):
+        cash_flow = self.get_cash_flow(key = key, symbol = 'WMT')
+        balance_sheet = self.get_balance_sheet(key = key, symbol = 'WMT')
+        income_statement = self.get_income_statement(key = key, symbol = 'WMT')
         
-        year = '2023'
-        print(url_base + f"dfp_cia_aberta_{year}.zip")
-        download = requests.get(url_base + f"dfp_cia_aberta_{year}.zip")
+    def get_cash_flow(
+            self, 
+            key: str,
+            symbol: str,
+            period: str = 'quarterlyReports'
+            ):
+        data = self.make_request(f"https://www.alphavantage.co/query?function=CASH_FLOW&symbol={symbol}&apikey={key}", period)
+        return data
 
-        zip = zipfile.ZipFile(download.content.decode())
-        zip.extractall()
+    def get_income_statement(
+            self,
+            key: str,
+            symbol: str,
+            period: str = 'quarterlyReports'
+    ):
+        data = self.make_request(f"https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol={symbol}&apikey={key}", period)
+        return data
+    
+    def get_balance_sheet(
+            self,
+            key: str,
+            symbol: str,
+            period: str = 'quarterlyReports'
+    ):
+        data = self.make_request(f"https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol={symbol}&apikey={key}", period)
+        return data
+    
+    def make_request(
+            self, 
+            url: str,
+            period: str = 'quarterlyReports'
+            ):
+        data = requests.get(url).json()
+        period_data = data[period]
+        return period_data
+    
+    def run_quarterly(self, key):
 
-        print(zip)
+        
 
-instance = GetFundData()
+instance = GetFundData(key)
