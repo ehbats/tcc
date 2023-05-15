@@ -84,4 +84,4 @@ class GetNewsContent:
 
         final_p = self.filter_relevant_content(p_list)
 
-        return (final_p, url)
+        return (final_p, original_url)

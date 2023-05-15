@@ -8,7 +8,8 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "twittator.settings")
 django.setup()
 from news_data.models.news import News
 from news_data.models.query import Query
-from django.db import transaction
+from datetime import datetime
+from django.core.exceptions import ValidationError
 
 class PopulateNewsData(GetNewsData, GetNewsContent):
     def populate(
@@ -22,41 +23,63 @@ class PopulateNewsData(GetNewsData, GetNewsContent):
             country: str = 'BR',
             ceid: str = 'PT:br',
     ):
+        
         entries = self.get_news_data(query, topic, before, is_query, after, language, country, ceid).entries
-        query = Query.objects.get_or_create(
+
+        if before:
+            try:
+                before = datetime.strptime(before, '%Y-%M-%d').date()
+            except:
+                raise ValidationError(f'The before date {before} is invalid')
+
+        if after:
+            try:
+                after = datetime.strptime(after, '%Y-%M-%d').date()
+            except:
+                raise ValidationError(f'The after date {after} is invalid!')
+
+        query, exists = Query.objects.get_or_create(
             query = query, 
             topic = topic, 
             before = before, 
             after = after, 
             language= language, 
             country = country, 
-            ceid = ceid)[0]
-        # query.save()
-        index = 0
+            ceid = ceid
+        )
+
         for entry in entries:
             title = entry.title
             published_parsed = entry.published_parsed
             pub_date = f'{published_parsed.tm_year}-{published_parsed.tm_mon}-{published_parsed.tm_mday}'
+            try:
+                pub_date = datetime.strptime(pub_date, '%Y-%M-%d').date()
+            except:
+                raise ValidationError(f'Could not parse te PubDate {pub_date}')
             rss_link = entry.link
             source = entry.source.title
-            content = self.get_content(rss_link)
-            original_text = ' '.join(content[0])
-            original_url = content[1]
-            
-            news = News.objects.get_or_create(
-                title = title,
-                rss_link = rss_link,
-                description = original_text,
-                source = source,
-                source_url = original_url,
-                pubdate = pub_date,
-                query_id = query
-            )[0]
-            # news.save()
+            title = title.split(source)[0][:-3]
 
-            index += 1
-            if index > 3:
-                break
+            news_obj = News.objects.filter(
+                rss_link = rss_link
+            )
+            if not news_obj.exists():
+                content = self.get_content(rss_link)
+                original_text = ' '.join(content[0])
+                original_url = content[1]
+                news, created = News.objects.get_or_create(
+                    title = title,
+                    source = source,
+                    pubdate = pub_date,
+                    query_id = query
+                )
+
+                if created:
+                    news.description = original_text
+                    news.source_url = original_url
+                    news.query_id = query
+                    news.rss_link = rss_link
+                    news.save()
         
 get_news = PopulateNewsData()
 

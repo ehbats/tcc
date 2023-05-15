@@ -7,12 +7,9 @@ from ta import trend
 from ta import momentum
 from ta import volume
 from datetime import datetime
+from statistics import mean 
 
 from yahoo_data.services.momentum import GetMomentumIndicators
-
-ticker = 'MGLU3.SA'
-start_date = '2022-01-01'
-end_date = '2023-01-05'
 
 class GenerateTechnicalIndicators():
     def __init__(self, ticker: str, start_date: str, end_date: str = datetime.now()):
@@ -25,9 +22,9 @@ class GenerateTechnicalIndicators():
 
     def get_trend_indicators(self,
                              df: pd.DataFrame,
-                             sma_window: int = 1, 
-                             wma_window: int = 1,
-                             cci_window: int = 1,
+                             sma_window: int = 30, 
+                             wma_window: int = 30,
+                             cci_window: int = 14,
                              cci_constant: float = 0.015
                              ):
         df['sma'] = trend.sma_indicator(
@@ -45,7 +42,8 @@ class GenerateTechnicalIndicators():
             low = df['Low'],
             close = df['Close'],
             window = cci_window,
-            constant = cci_constant
+            constant = cci_constant,
+            fillna = True
         )
 
         return df
@@ -105,8 +103,6 @@ class GenerateTechnicalIndicators():
                      roc_window: int = 10
                      ):
         df['macd'] = trend.macd(df['Close'], macd_window_slow, macd_window_fast)
-
-        df['roc'] = momentum.roc(df['Close'], roc_window)
 
         momentum_indicators = GetMomentumIndicators()
         df = momentum_indicators.run_with_standard_intervals(df = df)
