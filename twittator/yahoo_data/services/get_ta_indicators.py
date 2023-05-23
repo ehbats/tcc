@@ -10,13 +10,12 @@ from datetime import datetime
 
 from yahoo_data.services.momentum import GetMomentumIndicators
 
-ticker = 'MGLU3.SA'
-start_date = '2022-01-01'
-end_date = '2023-01-05'
-
 class GenerateTechnicalIndicators:
     """
-    
+    This class generates technical indicators for equities prices.
+    Each method receives a pandas DataFrame with the price data for a specific Ticker
+    and returns the DataFrame with the new indicators added as columns. Each method
+    may also get
     """
     def __init__(self, ticker: str, start_date: str, end_date: str = datetime.now()):
         price_data = GetPriceData()
