@@ -1,12 +1,12 @@
 import pandas as pd
 
 class GetMomentumIndicators():
-    def get_roc(self, df: pd.DataFrame, window: int = 10):
+    def get_roc(self, df: pd.DataFrame, window: int = 14):
         df['roc'] = (df['Close'] - df['Close'].shift(window)) / df['Close'].shift(window)
 
         return df
     
-    def get_roc_percentage(self, df: pd.DataFrame, window: int = 14):
+    def get_roc_percentage(self, df: pd.DataFrame, window: int = 10):
         df['roc_perc'] = (df['Close'] - df['Close'].shift(window)) * 100 / df['Close'].shift(window)
 
         return df

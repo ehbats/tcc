@@ -1,3 +1,4 @@
 from django.contrib import admin
+from lang_processing.models.polarity import Polarity
 
-# Register your models here.
+admin.site.register(Polarity)
