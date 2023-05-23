@@ -52,7 +52,7 @@ class GetFundData:
         return period_data
     
     def run_quarterly(self, key):
-
+        pass
         
 
 instance = GetFundData(key)
