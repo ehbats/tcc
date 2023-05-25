@@ -137,7 +137,12 @@ class GenerateTechnicalIndicators:
                    mf_window: int = 14
                    ):
         """
-        
+        Generates the volume indicators:
+        on_balance: on balance volume
+        mfi: money flow index
+
+        Inputs:
+        mf_window: window, in days to use on the MFI indicator
         """
         df['on_balance'] = volume.on_balance_volume(df['Close'], df['Volume'])
 
@@ -157,6 +162,17 @@ class GenerateTechnicalIndicators:
                      macd_window_fast: int = 12,
                      roc_window: int = 10
                      ):
+        """
+        Generates the momentum indicators:
+        macd: Moving average convergence divergence
+        chande: Chande momentum oscillator
+        momentum: momentum
+        roc: Rate of change
+        roc_perc: Rate of change percentage
+
+        Note that most of the indicators are generated using a different class, because
+        some of these indicators were not found on the "ta" library.
+        """
         df['macd'] = trend.macd(df['Close'], macd_window_slow, macd_window_fast)
 
         momentum_indicators = GetMomentumIndicators()
@@ -165,6 +181,10 @@ class GenerateTechnicalIndicators:
         return df
 
     def run_with_default_params(self):
+        """
+        Runs all of this class's methods using the default params
+        specified.
+        """
         df = self.df
         df = self.get_trend_indicators(df = df)
         df = self.get_mean_reversion(df = df)

@@ -23,7 +23,11 @@ class PopulateNewsData(GetNewsData, GetNewsContent):
             country: str = 'BR',
             ceid: str = 'PT:br',
     ):
-        
+        """
+        This class receives the params used to search for news on the google news rss feed and uses the necessary methods created on this app
+        to get the content of these news and generate polarization from the text. Then it populates these news on the DB, according to the 
+        modelling
+        """
         entries = self.get_news_data(query, topic, before, is_query, after, language, country, ceid).entries
 
         if before:
