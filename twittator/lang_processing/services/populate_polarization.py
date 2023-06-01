@@ -11,6 +11,13 @@ import json
 
 class PopulatePolarity:
     def populate(self):
+        """
+        This class/method populates polarization for all of the news that have not gotten a polarization yet.
+        It does not receive any params, as all it does is filter the news that have not gotten a polarization
+        (has_polarization = False) and runs the polarization calculator with the default params. This will update the attribute 
+        has_polarization to False and generate new rows on the polarization table associated with each of the polarized news as 
+        a foreign key.
+        """
         polarization_calculator = GetPolarization()
         news_data = News.objects.filter(
             has_polarization = False
