@@ -14,6 +14,11 @@ class GeneratePCAByGrouping:
             df: pd.DataFrame,
             groupings: dict
     ):
+        """
+        Receives a pandas DataFrame and the name of the columns with which the user wants to group.
+        For each group, it runs the PCA leaving one component per group. This returns a DataFrame
+        only with the generated components.
+        """
         reduced_df = pd.DataFrame()
         df = df.dropna()
 

@@ -12,6 +12,13 @@ class GetPolarization:
             lemmatization_size: str = 'lg',
             sentic_lang: str = 'pt'
     ):
+        """
+        This constructor method initiates the necessary data fetched from spacy, SenticNet and nltk.
+        Doing this on the constructor method avoids reloading the data every time a method is ran,
+        thus reducing process time. Note that it receives as params configurations that are useful
+        for the algorithm. The user may want to reduce the lemmatization size to greatly reduce the 
+        process time, as the 'lg' lemmatization set takes a long time to load.
+        """
         # IF NLTK RETURNS AN ERROR, UNCOMMENT THESE LINES
         # nltk.download('stopwords')
         # nltk.download('rslp')
@@ -26,6 +33,11 @@ class GetPolarization:
             self, 
             text: str,
     ):
+        """
+        Preprocesses the text to make it suitable for analysis and to calculate polarization.
+        This lower cases the text, lemmatizes it using spacy's lemmatization tool, and then
+        removes the stopwords from the text.
+        """
         text = text.lower()
 
         stopwords_set = self.stopwords_set
@@ -65,7 +77,7 @@ class GetPolarization:
         nlp = self.nlp
         
         lemmatized_and_tokenized_text = nlp(text)
-
+        # TODO: evaluate if it would be better to remove the stopwords BEFORE the lemmatization
         lemmatized_tokenized_no_stopwords = [token.lemma_ for token in lemmatized_and_tokenized_text if token.lemma_ not in stopwords_set]
         lemma_token_no_stop_include_english = [token for token in lemmatized_tokenized_no_stopwords if token not in stop_words_english]
 
@@ -76,6 +88,9 @@ class GetPolarization:
             tokens: list,
             lang: str = 'pt'
     ):
+        """
+        Receives a list of tokens, generates a polarization list from these tokens and the polarization mean. Returns both the list and the mean 
+        """
         bsn = self.sentic
         backup_polarity = self.full_sentic
         token_amount = len(tokens)
@@ -102,6 +117,11 @@ class GetPolarization:
             self,
             text: str
     ):
+        """
+        Articulates this class's methods to generate the polarization with the default params created.
+        Returns the words considered relevant (no stopwords and tokenized), the mean polarization
+        and the list of the calculated polarities.
+        """
         lemmatized_tokenized_no_stopwords = self.text_preprocessing(text)
         polarization, polarity_list = self.get_mean_polarity(lemmatized_tokenized_no_stopwords)
 
