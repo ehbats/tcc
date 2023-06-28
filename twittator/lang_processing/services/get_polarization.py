@@ -86,13 +86,11 @@ class GetPolarization:
                 polarity_list.append(bsn.polarity_value(token))
             except:
                 failed_polarity = True
-                print(f'COULD NOT LOAD POLARITY FOR TOKEN {token} IN {lang} LANGUAGE! WILL ATTEMPT WITH WHOLE SENTICNET')
             if failed_polarity:
                 try:
                     polarity_list.append(backup_polarity.polarity_value(token))
                 except:
                     failed_final = True
-                    print(f'COULD NOT LOAD POLARITY FOR TOKEN {token} WITH BACKUP POLARITY!')
                 
         polarity_list = [float(polarity) if type(polarity) == str else polarity for polarity in polarity_list]
 
