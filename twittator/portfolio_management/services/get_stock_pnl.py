@@ -25,6 +25,8 @@ class StockPnLCalculator:
         self,
         price_data: pd.DataFrame,
         column: str,
+        periods: int,
     ):
 
-        price_data[f'{column} PnL'] = price_data[column].pct_change(periods=1)
+        price_data[f'{column} PnL {periods} days'] = price_data[column].pct_change(periods=periods)
+        return price_data
