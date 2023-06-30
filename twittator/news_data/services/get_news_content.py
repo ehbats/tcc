@@ -31,10 +31,10 @@ class GetNewsContent:
         request = urlopen(fake_request).read()
         soup = BeautifulSoup(request, 'html.parser')
         texts = soup.find('article')
-
         p_list = []
-        for p in texts.select("p"):
-            p_list.append(p.text)
+        if texts != None:
+            for p in texts.select("p"):
+                p_list.append(p.text)
 
         return p_list
 

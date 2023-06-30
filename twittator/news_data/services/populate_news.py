@@ -8,7 +8,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "twittator.settings")
 django.setup()
 from news_data.models.news import News
 from news_data.models.query import Query
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.core.exceptions import ValidationError
 
 class PopulateNewsData(GetNewsData, GetNewsContent):
@@ -84,7 +84,27 @@ class PopulateNewsData(GetNewsData, GetNewsContent):
                     news.query_id = query
                     news.rss_link = rss_link
                     news.save()
-        
+
+    def populate_daily_news_between_two_periods(
+            self, 
+            start_date: str,
+            end_date: str,
+            query: str
+            ):
+        """
+        The method populate is limited, because it only allows the user to 
+        """
+        start_date_object = datetime.strptime(start_date, '%Y-%m-%d')
+        end_date_object = datetime.strptime(end_date, '%Y-%m-%d')
+        while start_date < end_date:
+            next_date = start_date + timedelta(days=2)
+            self.populate(
+                query=query,
+                before=datetime.strftime(next_date, '%Y-%m-%d'),
+                after=datetime.strftime(start_date, '%Y-%m-%d')
+            )
+            start_date = start_date + timedelta(days=1)
+            
 get_news = PopulateNewsData()
 
 test_news_with_query = get_news.populate(
@@ -92,3 +112,8 @@ test_news_with_query = get_news.populate(
     before = "2023-01-12",
     after = "2023-01-10",
 )
+# get_news.populate_daily_news_between_two_periods(
+#     '2023-01-01',
+#     '2023-01-15',
+#     'BPAC11'
+# )

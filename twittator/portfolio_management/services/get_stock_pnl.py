@@ -16,6 +16,8 @@ class StockPnLCalculator:
     price_data: Pandas DataFrame with the price data of the stock
     column: the column of the pandas DataFrame that will be used
     to calculate the daily returns. Example: 'Open', 'Close'
+    periods: determines the number of days before the current date
+    that will be used to calculate PnL. Defaults to 1 (daily returns).
 
     Returns:
     Pandas DataFrame with a new column, with the daily returns
@@ -25,7 +27,7 @@ class StockPnLCalculator:
         self,
         price_data: pd.DataFrame,
         column: str,
-        periods: int,
+        periods: int = 1,
     ):
 
         price_data[f'{column} PnL {periods} days'] = price_data[column].pct_change(periods=periods)
