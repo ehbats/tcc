@@ -6,7 +6,7 @@ from news_data.services.get_rss_data import GetNewsData
 get_news = GetNewsData()
 
 test_news_with_query = get_news.get_news_data(
-    'AMER3',
+    'intitle:PETR4',
     before = "2023-01-12",
     after = "2023-01-10",
 )

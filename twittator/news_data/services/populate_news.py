@@ -94,8 +94,8 @@ class PopulateNewsData(GetNewsData, GetNewsContent):
         """
         The method populate is limited, because it only allows the user to 
         """
-        start_date_object = datetime.strptime(start_date, '%Y-%m-%d')
-        end_date_object = datetime.strptime(end_date, '%Y-%m-%d')
+        start_date = datetime.strptime(start_date, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date, '%Y-%m-%d')
         while start_date < end_date:
             next_date = start_date + timedelta(days=2)
             self.populate(
@@ -107,13 +107,13 @@ class PopulateNewsData(GetNewsData, GetNewsContent):
             
 get_news = PopulateNewsData()
 
-test_news_with_query = get_news.populate(
-    'AMER3',
-    before = "2023-01-12",
-    after = "2023-01-10",
-)
-# get_news.populate_daily_news_between_two_periods(
-#     '2023-01-01',
-#     '2023-01-15',
-#     'BPAC11'
+# test_news_with_query = get_news.populate(
+#     'AMER3',
+#     before = "2023-01-12",
+#     after = "2023-01-10",
 # )
+get_news.populate_daily_news_between_two_periods(
+    '2023-01-01',
+    '2023-01-15',
+    'BPAC11'
+)
