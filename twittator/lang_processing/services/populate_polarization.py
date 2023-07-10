@@ -5,6 +5,7 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "twittator.settings")
 django.setup()
 from lang_processing.models.polarity import Polarity
+from news_data.models.query import Query
 from news_data.models.news import News
 from get_polarization import GetPolarization
 import json
@@ -34,6 +35,8 @@ class PopulatePolarity:
                 polarity_object.relevant_words = json.dumps(lemma, ensure_ascii= False)
                 polarity_object.mean_polarization = mean_polarization
                 polarity_object.polarization_list = json.dumps(polarity_list)
+                polarity_object.news_pubdate = news.pubdate
+                polarity_object.news_query = news.query_id.query
                 news.has_polarization = True
                 news.save()
                 polarity_object.save()

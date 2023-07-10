@@ -6,7 +6,9 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "twittator.settings")
 django.setup()
 from lang_processing.models.polarity import Polarity
 from news_data.models.news import News
+from news_data.models.query import Query
 import pandas as pd
+from yahoo_data.services.get_price_data import GetPriceData
 
 class GeneratePolarizationDataFrame:
     """
@@ -30,4 +32,25 @@ class GeneratePolarizationDataFrame:
             ticker: str,
             periods: int = 1,
     ):
+        self.get_news_n_days_prior(periods)
+
+    def get_news_n_days_prior(self, periods: int, df: pd.DataFrame):
         pass
+
+# instance = GeneratePolarizationDataFrame()
+# price_df = GetPriceData().get_price_data(
+#     'BPAC11.SA',
+#     '2023-01-01',
+#     '2023-01-15'
+# )
+# instance.generate_polarization_for_ticker(
+#     price_df,
+#     'BPAC11',
+#     5
+# )
+
+news = News.objects.get(
+    id = 320
+)
+
+print(news.query_id.query)

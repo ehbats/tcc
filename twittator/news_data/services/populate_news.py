@@ -115,5 +115,5 @@ get_news = PopulateNewsData()
 get_news.populate_daily_news_between_two_periods(
     '2023-01-01',
     '2023-01-15',
-    'BPAC11'
+    'intitle:BPAC11'
 )
