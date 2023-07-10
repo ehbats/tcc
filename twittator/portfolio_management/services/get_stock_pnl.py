@@ -29,6 +29,6 @@ class StockPnLCalculator:
         column: str,
         periods: int = 1,
     ):
-
+        price_data = price_data.copy(deep = True)
         price_data[f'{column} PnL {periods} days'] = price_data[column].pct_change(periods=periods)
         return price_data
