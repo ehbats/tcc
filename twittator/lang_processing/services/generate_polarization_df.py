@@ -37,17 +37,17 @@ class GeneratePolarizationDataFrame:
     def get_news_n_days_prior(self, periods: int, df: pd.DataFrame):
         pass
 
-# instance = GeneratePolarizationDataFrame()
-# price_df = GetPriceData().get_price_data(
-#     'BPAC11.SA',
-#     '2023-01-01',
-#     '2023-01-15'
-# )
-# instance.generate_polarization_for_ticker(
-#     price_df,
-#     'BPAC11',
-#     5
-# )
+instance = GeneratePolarizationDataFrame()
+price_df = GetPriceData().get_price_data(
+    'BPAC11.SA',
+    '2023-01-01',
+    '2023-01-15'
+)
+instance.generate_polarization_for_ticker(
+    price_df,
+    'BPAC11',
+    5
+)
 
 news = News.objects.get(
     id = 320

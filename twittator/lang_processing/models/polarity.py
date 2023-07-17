@@ -10,8 +10,8 @@ class Polarity(models.Model):
     mean_polarization = models.FloatField(default = 0,)
     polarization_list = models.JSONField(default = list)
     news_id = models.ForeignKey(News, on_delete = models.CASCADE)
-    news_pubdate = models.DateField()
-    news_query = models.TextField()
+    news_pubdate = models.DateField(null=True, blank=True)
+    news_query = models.TextField(null=True, blank=True)
 
     class Meta:
         constraints = [

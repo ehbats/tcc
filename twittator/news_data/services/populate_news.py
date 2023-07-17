@@ -92,7 +92,9 @@ class PopulateNewsData(GetNewsData, GetNewsContent):
             query: str
             ):
         """
-        The method populate is limited, because it only allows the user to 
+        The method populate is limited, because it only allows the user to populate date period
+        per query. This method will make the same query on the news.google RSS feed
+        for every single date in between the start and end dates passed.
         """
         start_date = datetime.strptime(start_date, '%Y-%m-%d')
         end_date = datetime.strptime(end_date, '%Y-%m-%d')
