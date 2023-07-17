@@ -32,10 +32,15 @@ class GeneratePolarizationDataFrame:
             ticker: str,
             periods: int = 1,
     ):
-        self.get_news_n_days_prior(periods)
+        self.get_news_n_days_prior(periods, df, ticker)
 
-    def get_news_n_days_prior(self, periods: int, df: pd.DataFrame):
-        pass
+    def get_news_n_days_prior(self, periods: int, df: pd.DataFrame, ticker: str):
+        
+        polarity_filter = Polarity.objects.filter(
+            news_pubdate = df.index[0],
+            news_query__icontains = ticker
+        )
+        print(polarity_filter)
 
 instance = GeneratePolarizationDataFrame()
 price_df = GetPriceData().get_price_data(
@@ -48,9 +53,3 @@ instance.generate_polarization_for_ticker(
     'BPAC11',
     5
 )
-
-news = News.objects.get(
-    id = 320
-)
-
-print(news.query_id.query)
