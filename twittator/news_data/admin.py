@@ -1,3 +1,6 @@
 from django.contrib import admin
+from news_data.models.news import News
+from news_data.models.query import Query
 
-# Register your models here.
+admin.site.register(News)
+admin.site.register(Query)

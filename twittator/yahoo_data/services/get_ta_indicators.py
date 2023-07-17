@@ -7,15 +7,33 @@ from ta import trend
 from ta import momentum
 from ta import volume
 from datetime import datetime
+from statistics import mean 
 
 from yahoo_data.services.momentum import GetMomentumIndicators
 
-ticker = 'MGLU3.SA'
-start_date = '2022-01-01'
-end_date = '2023-01-05'
-
-class GenerateTechnicalIndicators():
+class GenerateTechnicalIndicators:
+    """
+    This class generates technical indicators for equities prices.
+    Each method receives a pandas DataFrame with the price data for a specific Ticker
+    and returns the DataFrame with the new indicators added as columns. Each method
+    may also receive as params the indicators params such as time windows or other constants.
+    
+    All of these indicators params have a default value set, according to the reference article.
+    You can run all of the indicators at once using the run with default params method, that gets
+    all of the indicators using the default parameters set. 
+    """
     def __init__(self, ticker: str, start_date: str, end_date: str = datetime.now()):
+        """
+        This class generates the data necessary to run all of the other methods. It is important that
+        the data is loaded on a constructor method as it avoids unecessary API calls, making run time
+        more efficient. This class uses the GetPriceData class, that gets all of the price data required
+        to run this class's methods. Hence, the inputs are the same as GetPriceData
+        
+        Inputs:
+        - ticker: the ticker of the equity we wish to get price data
+        - start_date: the start date from when the price data will be fetched.
+        - end_date: price data will be fetched until this date. Defaults to today.
+        """
         price_data = GetPriceData()
         self.df = price_data.get_price_data(
             ticker,
@@ -25,11 +43,23 @@ class GenerateTechnicalIndicators():
 
     def get_trend_indicators(self,
                              df: pd.DataFrame,
-                             sma_window: int = 1, 
-                             wma_window: int = 1,
-                             cci_window: int = 1,
+                             sma_window: int = 30, 
+                             wma_window: int = 30,
+                             cci_window: int = 14,
                              cci_constant: float = 0.015
                              ):
+        """
+        Generates price trend indicators:
+        sma (Simple Moving Average)
+        wma (Weighted Moving Average)
+        cci (Commodity Channel Index)
+        
+        Inputs:
+        sma_window: The window, in days, to generate the sma
+        wma_window: The window, in days, to generate the wma
+        cci_window: The window, in days, to generate the cci
+        cci_constant: Constant param to generate the cci
+        """
         df['sma'] = trend.sma_indicator(
             df['Close'], 
             window = sma_window,
@@ -45,7 +75,8 @@ class GenerateTechnicalIndicators():
             low = df['Low'],
             close = df['Close'],
             window = cci_window,
-            constant = cci_constant
+            constant = cci_constant,
+            fillna = True
         )
 
         return df
@@ -61,7 +92,17 @@ class GenerateTechnicalIndicators():
             window = window, 
             smooth_window = smooth_window
             )
+        """
+        Generates mean reversion indicators:
+        Stochastic Oscillator (fast)
+        Stochastic Oscillator (slow)
 
+        Generates two columns for both the indicators: stoch and signal.
+
+        Inputs:
+        window: The window in days to generate the fast oscillator
+        smooth_window: The window in days to generate the slow oscillator    
+        """
         df['fast_stoch'] = fast_stoch.stoch()
         df['fast_signal'] = fast_stoch.stoch_signal()
 
@@ -75,7 +116,16 @@ class GenerateTechnicalIndicators():
                               window: int = 14,
                               william_lpb: int = 14
                               ):
-        
+        """
+        Generates the relative strength indicators:
+        rsi: Relative Strength Index
+        williams_r: Williams %R
+
+        Inputs:
+        window: Window, in days, to generate the RSI
+        william_lpb: Lookback period, in days
+        """
+
         df['rsi'] = momentum.rsi(df['Close'], window = window)
 
         df['williams_r'] = momentum.williams_r(df['High'], df['Close'], william_lpb)
@@ -86,6 +136,14 @@ class GenerateTechnicalIndicators():
                    df: pd.DataFrame,
                    mf_window: int = 14
                    ):
+        """
+        Generates the volume indicators:
+        on_balance: on balance volume
+        mfi: money flow index
+
+        Inputs:
+        mf_window: window, in days to use on the MFI indicator
+        """
         df['on_balance'] = volume.on_balance_volume(df['Close'], df['Volume'])
 
         df['MFI'] = volume.money_flow_index(
@@ -104,9 +162,18 @@ class GenerateTechnicalIndicators():
                      macd_window_fast: int = 12,
                      roc_window: int = 10
                      ):
-        df['macd'] = trend.macd(df['Close'], macd_window_slow, macd_window_fast)
+        """
+        Generates the momentum indicators:
+        macd: Moving average convergence divergence
+        chande: Chande momentum oscillator
+        momentum: momentum
+        roc: Rate of change
+        roc_perc: Rate of change percentage
 
-        df['roc'] = momentum.roc(df['Close'], roc_window)
+        Note that most of the indicators are generated using a different class, because
+        some of these indicators were not found on the "ta" library.
+        """
+        df['macd'] = trend.macd(df['Close'], macd_window_slow, macd_window_fast)
 
         momentum_indicators = GetMomentumIndicators()
         df = momentum_indicators.run_with_standard_intervals(df = df)
@@ -114,6 +181,10 @@ class GenerateTechnicalIndicators():
         return df
 
     def run_with_default_params(self):
+        """
+        Runs all of this class's methods using the default params
+        specified.
+        """
         df = self.df
         df = self.get_trend_indicators(df = df)
         df = self.get_mean_reversion(df = df)
@@ -122,70 +193,3 @@ class GenerateTechnicalIndicators():
         df = self.get_momentum(df = df)
 
         return df
-
-# test_mglu = GetPriceData.get_price_data(
-#     ticker = ticker,
-#     start_date = start_date,
-#     end_date = end_date
-#     )
-
-
-# ## TREND INDICATORS
-# moving_average = trend.sma_indicator(
-#     test_mglu['Close'], 
-#     window = 1,
-#     )
-# weighted_average = trend.wma_indicator(
-#     test_mglu['Close'],
-#     window = 1
-# )
-# cci = trend.cci(
-#     high = test_mglu['High'],
-#     low = test_mglu['Low'],
-#     close = test_mglu['Close'],
-#     window = 14,
-#     constant = 0.015
-# )
-
-# ## MEAN REVERSION
-
-# fast_stoch = momentum.StochasticOscillator(
-#     high=test_mglu['High'], 
-#     low=test_mglu['Low'], 
-#     close=test_mglu['Close'], 
-#     window=14, 
-#     smooth_window=3
-#     )
-
-# fast_stock = fast_stoch.stoch()
-# fast_signal = fast_stoch.stoch_signal()
-
-# slow_stock = fast_stock
-# slow_signal = slow_stock.rolling(window = 3).mean()
-
-# ## RELATIVE STRENGTH
-
-# rsi = momentum.rsi(test_mglu['Close'], window = 14)
-
-# william = momentum.williams_r(test_mglu['High'], test_mglu['Close'])
-
-# ## VOLUME
-
-# on_balance = volume.on_balance_volume(test_mglu['Close'], test_mglu['Volume'])
-
-# money_flow = volume.money_flow_index(
-#     test_mglu['High'], 
-#     test_mglu['Low'], 
-#     test_mglu['Close'], 
-#     test_mglu['Volume'],
-#     )
-
-# ## MOMENTUM
-
-# macd = trend.macd(test_mglu['Close'], )
-
-# rate_of_change = momentum.roc(test_mglu['Close'], 10)
-
-# momentums = GetMomentumIndicators.run_with_standard_intervals(test_mglu)
-
-# print(momentums)
