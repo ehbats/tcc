@@ -5,10 +5,11 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "twittator.settings")
 django.setup()
 from lang_processing.models.polarity import Polarity
-from news_data.models.news import News
-from news_data.models.query import Query
 import pandas as pd
 from yahoo_data.services.get_price_data import GetPriceData
+from datetime import timedelta
+import itertools
+import json
 
 class GeneratePolarizationDataFrame:
     """
@@ -32,24 +33,37 @@ class GeneratePolarizationDataFrame:
             ticker: str,
             periods: int = 1,
     ):
-        self.get_news_n_days_prior(periods, df, ticker)
-
-    def get_news_n_days_prior(self, periods: int, df: pd.DataFrame, ticker: str):
+        df['polarity'] = df.index.to_series().apply(self.get_news_n_days_prior, ticker = ticker, periods = periods)
         
+        return df
+
+    def get_news_n_days_prior(self, date, ticker: str, periods: int = 5):
+        final_date = pd.to_datetime(date)
+        start_date = final_date - timedelta(days=periods)
+
+        date_polarity_list = []
+
         polarity_filter = Polarity.objects.filter(
-            news_pubdate = df.index[0],
+            news_pubdate__lte = final_date,
+            news_pubdate__gte = start_date,
             news_query__icontains = ticker
         )
-        print(polarity_filter)
+        if polarity_filter.exists():
+            for polarity in polarity_filter:
+                parsed_polarity = json.loads(polarity.polarization_list)
+                date_polarity_list.append(parsed_polarity)
+        final_list = list(itertools.chain(*date_polarity_list))
 
-instance = GeneratePolarizationDataFrame()
-price_df = GetPriceData().get_price_data(
-    'BPAC11.SA',
-    '2023-01-01',
-    '2023-01-15'
-)
-instance.generate_polarization_for_ticker(
-    price_df,
-    'BPAC11',
-    5
-)
+        return final_list
+
+# instance = GeneratePolarizationDataFrame()
+# price_df = GetPriceData().get_price_data(
+#     'BPAC11.SA',
+#     '2023-01-01',
+#     '2023-01-15'
+# )
+# instance.generate_polarization_for_ticker(
+#     price_df,
+#     'BPAC11',
+#     1
+# )

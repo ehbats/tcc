@@ -23,10 +23,16 @@ class GetMomentumIndicators():
 
         return df
     
+    def get_ewma(self, df: pd.DataFrame, span: int = 12, column: str = 'Close'):
+        df[f'EWMA{span}'] = df[column].ewm(span=span).mean()
+
+        return df
+    
     def run_with_standard_intervals(self, df: pd.DataFrame):
         df = self.get_chande(df = df)
         df = self.get_momentum(df = df)
         df = self.get_roc_percentage(df = df)
         df = self.get_roc(df = df)
-
+        df = self.get_ewma(df = df)
+        
         return df

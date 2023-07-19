@@ -107,15 +107,3 @@ class PopulateNewsData(GetNewsData, GetNewsContent):
             )
             start_date = start_date + timedelta(days=1)
             
-get_news = PopulateNewsData()
-
-# test_news_with_query = get_news.populate(
-#     'AMER3',
-#     before = "2023-01-12",
-#     after = "2023-01-10",
-# )
-get_news.populate_daily_news_between_two_periods(
-    '2023-01-01',
-    '2023-01-15',
-    'intitle:BPAC11'
-)
