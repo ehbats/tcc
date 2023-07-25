@@ -2,7 +2,7 @@ import sys, os
 sys.path.append(os.path.abspath("."))
 sys.path.append(os.path.abspath(".."))
 from yahoo_data.services.get_price_data import GetPriceData
-from portfolio_management.services.optimizator import Optimizator
+from portfolio_management.services.base_optimizator import Optimizator
 
 dictionary = {
     'PETR4': {

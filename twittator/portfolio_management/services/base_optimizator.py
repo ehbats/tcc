@@ -20,6 +20,19 @@ class Optimizator(ABC):
     method. There is no standard way to optimize portfolios in this project.
     The user is free to implement optimization methods as they wish, and the
     tools created in this class are here to help. 
+
+    The user's desired path when using this class should be:
+    1. Use the class only when already having a DataFrame with prices and expected returns for
+    each stock.
+    2. Generate a DataFrame with the merged price data of all of the stocks.
+    3. Generate the covariance matrix with the DataFrame obtained on step 2.
+    4. Using the covariance matrix and the expected returns, optimize the
+    portfolio by maximizing the return function: with the constraints:
+        - The sum of the weights must equal to 1.
+        - The user must pass a constraint specifying a desired return OR a desired risk level. 
+    5. Get the generated weights and calculate the actual return. Compare it with the expected
+    return to evaluate the model.
+    6. Fin.
     """
     @staticmethod
     def get_portfolio_return(
