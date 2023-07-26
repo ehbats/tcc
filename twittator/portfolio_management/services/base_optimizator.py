@@ -35,7 +35,7 @@ class Optimizator(ABC):
     6. Fin.
     """
     @staticmethod
-    def get_portfolio_return(
+    def get_portfolio_return_from_dict(
         weights_returns: dict, 
         weight_key: str = 'weight',
         return_key: str = 'return',
@@ -75,13 +75,29 @@ class Optimizator(ABC):
         weight_sum = 0
         return_sum = 0
         for weight_return_dict in weights_returns.values():
-            return_sum = round(return_sum + weight_return_dict[weight_key] * weight_return_dict[return_key], decimal_places)
+            return_sum = return_sum + weight_return_dict[weight_key] * weight_return_dict[return_key]
             weight_sum += weight_return_dict[weight_key]
         
         if weight_sum != 1:
             raise Exception('The weights do not sum to 1!')
 
-        return -return_sum
+        return round(return_sum, decimal_places)
+    
+    @staticmethod
+    def get_portfolio_return_from_lists(
+        weight_list: list,
+        return_list: list,
+        decimal_places: int = 2
+    ):
+        return_sum = 0
+        for index, weight in enumerate(weight_list):
+            calculated_return = return_list[index] * weight
+            return_sum += calculated_return
+        
+        if sum(weight_list) != 1:
+            raise Exception('The weights do not sum to 1!')
+
+        return round(return_sum, decimal_places)
 
     @staticmethod
     def get_portfolio_covariance_matrix(

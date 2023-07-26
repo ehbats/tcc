@@ -29,10 +29,6 @@ class SciPyOptimizator(Optimizator):
         merged_price_dfs = self.merge_dataframes(dfs, [price_column], tickers)
         columns = merged_price_dfs.columns.values.tolist()
         covariance_matrix = self.get_portfolio_covariance_matrix(merged_price_dfs, columns)
-        self.constraints = [
-            {'type': 'eq', 'fun': self.weights_constraint, 'args': (ticker_weights)},
-            {'type': 'uneq', 'fun': self.risk_constraint, 'args': (desired_risk, covariance_matrix, ticker_weights)}
-        ]
 
         merged_price_dfs.apply(
             self.get_row_expected_returns, 
@@ -40,17 +36,9 @@ class SciPyOptimizator(Optimizator):
             original_ticker_weights=ticker_weights,
             covariance_matrix=covariance_matrix)
 
-    def weights_constraint(self, iterator, ticker_weights: dict):
-        weights = list(ticker_weights.values())
-
-        return sum(weights) -1
-    
-    def risk_constraint(self, iterator, max_risk: Number, covariance_matrix: np.ndarray, ticker_weights: dict):
-        ticker_weights = ticker_weights
-        weights = list(ticker_weights.values())
-        variance = self.get_portfolio_variance(weights, covariance_matrix)
-
-        return variance - max_risk
+    def cp_compatible_return_calculator(self, weights: cp.Variable, returns_list):
+        returns = weights @ returns_list
+        return returns
 
     def get_row_expected_returns(
             self, 
@@ -61,12 +49,22 @@ class SciPyOptimizator(Optimizator):
         ticker_weights = deepcopy(original_ticker_weights)
         row_dict = row.to_dict()
         expected_returns_list = list(row_dict.values())
+        ticker_weights_list = []
+        ticker_returns_list = []
         tickers_list = list(ticker_weights.keys())
         for index, expected_return in enumerate(expected_returns_list):
             corresponding_ticker = tickers_list[index]
             ticker_weights[corresponding_ticker]['return'] = expected_return
+            ticker_weights_list.append(ticker_weights[corresponding_ticker]['weight'])
+            ticker_returns_list.append(expected_return)
         
-        row_return = self.get_portfolio_return(ticker_weights, decimal_places=self.decimal_places)
-        minimize(self.get_portfolio_return, original_ticker_weights, )
-        return -row_return
-    
+        weights = cp.Variable(len(ticker_weights_list))
+        variance = self.get_portfolio_variance(weights, covariance_matrix)
+        objective = cp.Maximize(self.cp_compatible_return_calculator(weights, ticker_returns_list))
+        problem = cp.Problem(
+            objective,
+            [cp.sum(weights) == 1, weights >= 0, variance == 10])
+        problem.solve()
+        print(weights.value)
+        print(type(weights.value))
+        print(sum(weights.value))
