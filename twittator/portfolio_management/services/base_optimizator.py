@@ -27,9 +27,9 @@ class Optimizator(ABC):
     2. Generate a DataFrame with the merged price data of all of the stocks.
     3. Generate the covariance matrix with the DataFrame obtained on step 2.
     4. Using the covariance matrix and the expected returns, optimize the
-    portfolio by maximizing the return function: with the constraints:
+    portfolio by maximizing the return function. It is recommended to use the constraints:
         - The sum of the weights must equal to 1.
-        - The user must pass a constraint specifying a desired return OR a desired risk level. 
+        - The user must pass a constraint specifying a desired risk level OR a desired return. 
     5. Get the generated weights and calculate the actual return. Compare it with the expected
     return to evaluate the model.
     6. Fin.
@@ -38,7 +38,8 @@ class Optimizator(ABC):
     def get_portfolio_return(
         weights_returns: dict, 
         weight_key: str = 'weight',
-        return_key: str = 'return'
+        return_key: str = 'return',
+        decimal_places: int = 2
         ):
         """
         This class receives a dictionary containing a stock name
@@ -68,18 +69,19 @@ class Optimizator(ABC):
         return_key (optional): the key that specifies the return. Defautls to 'return'.
 
         Returns:
-        return_sum: Sum of the weighted returns, equivalent to the portfolio return.
+        return_sum: The negative sum of the weighted returns, equivalent to the portfolio return.
+        This is currently negative due to limitations with the scipy library
         """
         weight_sum = 0
         return_sum = 0
         for weight_return_dict in weights_returns.values():
-            return_sum = round(return_sum + weight_return_dict[weight_key] * weight_return_dict[return_key], 2)
+            return_sum = round(return_sum + weight_return_dict[weight_key] * weight_return_dict[return_key], decimal_places)
             weight_sum += weight_return_dict[weight_key]
         
         if weight_sum != 1:
             raise Exception('The weights do not sum to 1!')
 
-        return return_sum
+        return -return_sum
 
     @staticmethod
     def get_portfolio_covariance_matrix(
@@ -132,7 +134,7 @@ class Optimizator(ABC):
 
         portfolio_variance = weights.T * covariance_matrix * weights
 
-        return portfolio_variance
+        return portfolio_variance.tolist()[0][0]
     
     @staticmethod
     def merge_dataframes(
