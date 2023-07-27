@@ -17,6 +17,7 @@ class SciPyOptimizator(Optimizator):
                  desired_risk: float = 10,
                  decimal_places: int = 5
                  ):
+        self.desired_risk = desired_risk
         self.decimal_places = decimal_places
         ticker_weights = {}
         for index, ticker in enumerate(tickers):
@@ -49,27 +50,26 @@ class SciPyOptimizator(Optimizator):
         ticker_weights = deepcopy(original_ticker_weights)
         row_dict = row.to_dict()
         expected_returns_list = list(row_dict.values())
-        ticker_weights_list = []
         tickers_list = list(ticker_weights.keys())
         for index, expected_return in enumerate(expected_returns_list):
             corresponding_ticker = tickers_list[index]
             ticker_weights[corresponding_ticker]['return'] = expected_return
-            ticker_weights_list.append(ticker_weights[corresponding_ticker]['weight'])
-        weights = cp.Variable(len(ticker_weights_list))
-        variance = self.get_portfolio_variance(weights, covariance_matrix)
-        expected_returns_array = np.array(expected_returns_list)
-        objective = cp.Maximize(weights @ expected_returns_array.T)
+
+        weights = cp.Variable(len(expected_returns_list))
+        covariance_matrix_as_constant = np.array(covariance_matrix)
+        variance = cp.quad_form(weights, covariance_matrix_as_constant.T.dot(covariance_matrix_as_constant))
+
+        expected_returns_array = np.array([expected_returns_list])
+        portfolio_return = expected_returns_array @ weights
+        gamma = cp.Parameter(nonneg = True)
+        gamma.value = self.desired_risk
+        obj = portfolio_return - gamma * variance
+        objective = cp.Maximize(obj)
+
         problem = cp.Problem(
             objective,
             [
              cp.sum(weights) == 1, 
              weights >= 0, 
-            #  variance == 10
              ])
-        print('weights outside method', weights.value)
-        print("calculated returns!", self.cp_compatible_return_calculator(weights, expected_returns_array))
-        print('SOLVE!!')
         problem.solve()
-        print('weights after solve', weights.value)
-        print('original returns list', expected_returns_array)
-        print('calculated result outside of method', weights @ expected_returns_array.T)

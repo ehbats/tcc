@@ -126,8 +126,8 @@ class Optimizator(ABC):
     
     @staticmethod
     def get_portfolio_variance(
-        ordered_weights: list[Number],
-        covariance_matrix: pd.DataFrame | np.ndarray
+        weights: np.ndarray,
+        covariance_matrix: np.ndarray
     ):
         """
         Calculates the variance of the portfolio, given
@@ -143,14 +143,10 @@ class Optimizator(ABC):
         Returns:
         portfolio_variance: the variance of the portfolio.
         """
-        if isinstance(covariance_matrix, pd.DataFrame):
-            covariance_matrix = np.matrix(covariance_matrix)
-        
-        weights = Optimizator.parse_weights_list(ordered_weights)
-
-        portfolio_variance = weights.T * covariance_matrix * weights
-
-        return portfolio_variance.tolist()[0][0]
+        portfolio_variance = weights @ covariance_matrix @ weights.T
+        variance_as_float = portfolio_variance[0][0]
+        annualized_variance = variance_as_float * 252
+        return annualized_variance
     
     @staticmethod
     def merge_dataframes(
@@ -186,7 +182,7 @@ class Optimizator(ABC):
         return merged_df
     
     @staticmethod
-    def parse_weights_list(weights: list[Number]):
+    def parse_weights_list(weights):
         """
         This method is used to parse the weights list for the
         portfolio variance method. It turns a list of numbers
@@ -198,9 +194,10 @@ class Optimizator(ABC):
         Returns:
         weight_array: An array generated with the list of lists.
         """
-        weight_array = []
-        for weight in weights:
-            weight_array.append([weight])
+        if not isinstance(weights, np.ndarray):
+            weight_array = []
+            for weight in weights:
+                weight_array.append([weight])
 
         return np.array(weight_array)
 
