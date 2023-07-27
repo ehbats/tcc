@@ -4,72 +4,86 @@ sys.path.append(os.path.abspath(".."))
 from portfolio_management.services.base_optimizator import Optimizator
 import pandas as pd
 import numpy as np
-from numbers import Number
-from copy import deepcopy
-from scipy.optimize import minimize
 import cvxpy as cp
 
 class SciPyOptimizator(Optimizator):
     def optimize(self, 
+                 price_dfs: list[pd.DataFrame],
                  dfs: list[pd.DataFrame],
                  tickers: dict,
+                 prediction_column: str = 'Predictions',
                  price_column: str = 'Close',
                  desired_risk: float = 10,
-                 decimal_places: int = 5
                  ):
-        self.desired_risk = desired_risk
-        self.decimal_places = decimal_places
-        ticker_weights = {}
-        for index, ticker in enumerate(tickers):
-            ticker_weights[ticker] = {}
-            if index == 0:
-                ticker_weights[ticker]['weight'] = 1
-            else:
-                ticker_weights[ticker]['weight'] = 0
+        self.tickers = tickers
 
-        merged_price_dfs = self.merge_dataframes(dfs, [price_column], tickers)
-        columns = merged_price_dfs.columns.values.tolist()
+        merged_prediction_dfs = self.merge_dataframes(dfs, [prediction_column], tickers)
+
+        merged_price_dfs = self.merge_dataframes(price_dfs, [price_column], tickers)
+
+        size_difference = len(merged_price_dfs.index)-len(merged_prediction_dfs.index)
+
+        columns = list(merged_price_dfs.columns)
         covariance_matrix = self.get_portfolio_covariance_matrix(merged_price_dfs, columns)
 
-        merged_price_dfs.apply(
+        merged_prediction_dfs.apply(
             self.get_row_expected_returns, 
             axis=1, 
-            original_ticker_weights=ticker_weights,
-            covariance_matrix=covariance_matrix)
-
-    def cp_compatible_return_calculator(self, weights: cp.Variable, returns_array: np.ndarray):
-        returns = weights @ returns_array.T
-        return returns
-
+            covariance_matrix=covariance_matrix,
+            price_dfs=merged_price_dfs,
+            size_difference=size_difference,
+            desired_risk = desired_risk
+            )
+        
     def get_row_expected_returns(
             self, 
             row: pd.Series, 
-            original_ticker_weights: dict,
-            covariance_matrix: np.ndarray
+            covariance_matrix: np.ndarray,
+            price_dfs: pd.DataFrame,
+            size_difference: int,
+            desired_risk: float,
         ):
-        ticker_weights = deepcopy(original_ticker_weights)
+        prediction_index = row.name
+        current_price_index = prediction_index + size_difference
+        prices_until_current_line = price_dfs.loc[price_dfs.index < current_price_index]
+        columns = list(prices_until_current_line.columns)
+        covariance_matrix = self.get_portfolio_covariance_matrix(
+            prices_until_current_line,
+            columns
+        )
         row_dict = row.to_dict()
         expected_returns_list = list(row_dict.values())
-        tickers_list = list(ticker_weights.keys())
-        for index, expected_return in enumerate(expected_returns_list):
-            corresponding_ticker = tickers_list[index]
-            ticker_weights[corresponding_ticker]['return'] = expected_return
+
+        desired_risk = self.format_desired_risk(desired_risk)
 
         weights = cp.Variable(len(expected_returns_list))
         covariance_matrix_as_constant = np.array(covariance_matrix)
-        variance = cp.quad_form(weights, covariance_matrix_as_constant.T.dot(covariance_matrix_as_constant))
+        variance = cp.quad_form(weights, covariance_matrix_as_constant)
 
         expected_returns_array = np.array([expected_returns_list])
         portfolio_return = expected_returns_array @ weights
+        portfolio_return = portfolio_return[0]
         gamma = cp.Parameter(nonneg = True)
-        gamma.value = self.desired_risk
-        obj = portfolio_return - gamma * variance
+        gamma.value = 3
+        # obj = portfolio_return - gamma * variance
+        obj = portfolio_return
         objective = cp.Maximize(obj)
 
         problem = cp.Problem(
             objective,
             [
              cp.sum(weights) == 1, 
-             weights >= 0, 
+             weights >= 0,
+             variance <= desired_risk
              ])
         problem.solve()
+
+        # print('RETURNS ARRAY', portfolio_return.value)
+        # print('EXPECTED RETURNS ARRAY', expected_returns_array)
+        # print('objective', objective.value)
+        print('VARIANCE ARRAY', variance.value)
+        # print('WEIGHTS ARRAY', weights.value)
+
+    def format_desired_risk(self, desired_risk: float):
+        desired_risk_as_var = (desired_risk ** 2) / 252
+        return desired_risk_as_var
