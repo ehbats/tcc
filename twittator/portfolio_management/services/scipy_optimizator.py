@@ -69,8 +69,8 @@ class SciPyOptimizator(Optimizator):
         portfolio_return = portfolio_return[0]
         gamma = cp.Parameter(nonneg = True)
         gamma.value = 3
-        # obj = portfolio_return - gamma * variance
-        obj = portfolio_return
+        obj = portfolio_return - gamma * variance
+
         objective = cp.Maximize(obj)
 
         problem = cp.Problem(
@@ -82,11 +82,11 @@ class SciPyOptimizator(Optimizator):
              ])
         problem.solve()
 
-        # print('RETURNS ARRAY', portfolio_return.value)
+        print('RETURNS ARRAY', portfolio_return.value)
         # print('EXPECTED RETURNS ARRAY', expected_returns_array)
         # print('objective', objective.value)
         print('VARIANCE ARRAY', variance.value)
-        # print('WEIGHTS ARRAY', weights.value)
+        print('WEIGHTS ARRAY', weights.value)
 
     def format_desired_risk(self, desired_risk: float):
         desired_risk_as_var = (desired_risk ** 2) / 252
