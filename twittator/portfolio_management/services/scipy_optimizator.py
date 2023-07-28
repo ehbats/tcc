@@ -45,7 +45,11 @@ class SciPyOptimizator(Optimizator):
         ):
         prediction_index = row.name
         current_price_index = prediction_index + size_difference
-        prices_until_current_line = price_dfs.loc[price_dfs.index < current_price_index]
+        prices_until_current_line = price_dfs.loc[
+            (price_dfs.index < current_price_index)
+            &
+            (price_dfs.index > current_price_index - 252)
+            ]
         columns = list(prices_until_current_line.columns)
         covariance_matrix = self.get_portfolio_covariance_matrix(
             prices_until_current_line,
