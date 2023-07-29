@@ -52,7 +52,7 @@ class SciPyOptimizator(Optimizator):
         prediction_index = row.name
 
         if not reset:
-
+            pass
         else:
             current_price_index = prediction_index + size_difference
             prices_until_current_line = price_dfs.loc[
