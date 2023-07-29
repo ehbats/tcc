@@ -15,7 +15,8 @@ class RandomForestsWrapper:
     def run(self, dataframe: pd.DataFrame, target_column: str, price_column: str, columns_to_drop: list[str] = ['Open', 'High', 'Low', 'Close']):
 
         analysis_df = dataframe.copy(deep = True)
-        price_data = self.fetch_original_price_train_array(analysis_df, price_column)
+        price_data = self.fetch_original_column_from_df(analysis_df, price_column)
+        target_data = self.fetch_original_column_from_df(analysis_df, target_column)
 
         target_df = analysis_df[target_column]
         target_array = np.array(target_df)
@@ -41,10 +42,11 @@ class RandomForestsWrapper:
             'predictions': predictions,
             'errors': errors,
             'test_target': test_target,
-            'price_data': price_data
+            'price_data': price_data,
+            'target_data': target_data
         }
     
-    def fetch_original_price_train_array(self, analysis_df: pd.DataFrame, price_column: str):
+    def fetch_original_column_from_df(self, analysis_df: pd.DataFrame, price_column: str):
         price_df  = analysis_df[price_column]
         price_array = np.array(price_df)
         price_df = pd.DataFrame({price_column: price_array})

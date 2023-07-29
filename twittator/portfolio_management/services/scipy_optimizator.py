@@ -9,12 +9,14 @@ import cvxpy as cp
 class SciPyOptimizator(Optimizator):
     def optimize(self, 
                  price_dfs: list[pd.DataFrame],
+                 target_dfs: list[pd.DataFrame],
                  dfs: list[pd.DataFrame],
                  tickers: dict,
                  prediction_column: str = 'Predictions',
                  price_column: str = 'Close',
                  desired_risk: float = 10,
                  ):
+        self.count = 0
         self.tickers = tickers
 
         merged_prediction_dfs = self.merge_dataframes(dfs, [prediction_column], tickers)
@@ -31,6 +33,7 @@ class SciPyOptimizator(Optimizator):
             axis=1, 
             covariance_matrix=covariance_matrix,
             price_dfs=merged_price_dfs,
+            target_dfs = target_dfs,
             size_difference=size_difference,
             desired_risk = desired_risk
             )
@@ -40,54 +43,73 @@ class SciPyOptimizator(Optimizator):
             row: pd.Series, 
             covariance_matrix: np.ndarray,
             price_dfs: pd.DataFrame,
+            target_dfs: pd.DataFrame,
             size_difference: int,
             desired_risk: float,
         ):
+        reset = self.handle_count()
+
         prediction_index = row.name
-        current_price_index = prediction_index + size_difference
-        prices_until_current_line = price_dfs.loc[
-            (price_dfs.index < current_price_index)
-            &
-            (price_dfs.index > current_price_index - 252)
-            ]
-        columns = list(prices_until_current_line.columns)
-        covariance_matrix = self.get_portfolio_covariance_matrix(
-            prices_until_current_line,
-            columns
-        )
-        row_dict = row.to_dict()
-        expected_returns_list = list(row_dict.values())
 
-        desired_risk = self.format_desired_risk(desired_risk)
+        if not reset:
 
-        weights = cp.Variable(len(expected_returns_list))
-        covariance_matrix_as_constant = np.array(covariance_matrix)
-        variance = cp.quad_form(weights, covariance_matrix_as_constant)
+        else:
+            current_price_index = prediction_index + size_difference
+            prices_until_current_line = price_dfs.loc[
+                (price_dfs.index < current_price_index)
+                &
+                (price_dfs.index > current_price_index - 252)
+                ]
+            columns = list(prices_until_current_line.columns)
+            covariance_matrix = self.get_portfolio_covariance_matrix(
+                prices_until_current_line,
+                columns
+            )
+            row_dict = row.to_dict()
+            expected_returns_list = list(row_dict.values())
 
-        expected_returns_array = np.array([expected_returns_list])
-        portfolio_return = expected_returns_array @ weights
-        portfolio_return = portfolio_return[0]
-        gamma = cp.Parameter(nonneg = True)
-        gamma.value = 3
-        obj = portfolio_return - gamma * variance
+            desired_risk = self.format_desired_risk(desired_risk)
 
-        objective = cp.Maximize(obj)
+            weights = cp.Variable(len(expected_returns_list))
+            covariance_matrix_as_constant = np.array(covariance_matrix)
+            variance = cp.quad_form(weights, covariance_matrix_as_constant)
 
-        problem = cp.Problem(
-            objective,
-            [
-             cp.sum(weights) == 1, 
-             weights >= 0,
-             variance <= desired_risk
-             ])
-        problem.solve()
+            expected_returns_array = np.array([expected_returns_list])
+            portfolio_return = expected_returns_array @ weights
+            portfolio_return = portfolio_return[0]
+            gamma = cp.Parameter(nonneg = True)
+            gamma.value = 3
+            obj = portfolio_return - gamma * variance
 
-        print('RETURNS ARRAY', portfolio_return.value)
-        # print('EXPECTED RETURNS ARRAY', expected_returns_array)
-        # print('objective', objective.value)
-        print('VARIANCE ARRAY', variance.value)
-        print('WEIGHTS ARRAY', weights.value)
+            objective = cp.Maximize(obj)
+
+            problem = cp.Problem(
+                objective,
+                [
+                cp.sum(weights) == 1, 
+                weights >= 0,
+                variance <= desired_risk
+                ])
+            problem.solve()
 
     def format_desired_risk(self, desired_risk: float):
         desired_risk_as_var = (desired_risk ** 2) / 252
         return desired_risk_as_var
+    
+    def handle_count(self):
+        if not hasattr(self, 'count'):
+            self.count = 0
+        else:
+            if self.count <= 5:
+                self.count += 1
+                return True
+            else:
+                self.count = 0
+                return False
+            
+    def handle_weights(self, result_weights: list[float], reset: bool):
+        if not hasattr(self, 'weights'):
+            self.weights = []
+        elif reset:
+            self.weights = result_weights
+        return self.weights
