@@ -39,7 +39,8 @@ class MarkowitzOptimizator(Optimizator):
         merged_prediction_dfs['capitalization'] = merged_prediction_dfs.apply(
             self.get_return_from_initial_investment,
             axis=1,
-            initial_investment=initial_investment
+            initial_investment=initial_investment,
+            column='obtained_return'
         )
 
         return merged_prediction_dfs
@@ -124,9 +125,12 @@ class MarkowitzOptimizator(Optimizator):
             return np.array(returns.iloc[1])[..., np.newaxis]
         return np.zeros((1, len(new_df.columns))).T
         
-    def get_return_from_initial_investment(self, row: pd.Series, initial_investment: float):
+    def get_return_from_initial_investment(self, row: pd.Series, initial_investment: float, column: str, is_percentage: bool = False):
         initial_investment = self.handle_initial_investment(initial_investment)
-        self.initial_investment = initial_investment * (1 + row['obtained_return'])
+        if not is_percentage:
+            self.initial_investment = initial_investment * (1 + row[column])
+            return self.initial_investment
+        self.initial_investment = initial_investment * (1 + row[column]/100)
         return self.initial_investment
 
     def handle_count(self):

@@ -25,11 +25,11 @@ class RandomForestsWrapper:
         features_df = analysis_df.drop(columns=columns_to_drop)
         features_array = np.array(features_df)
 
-        np.random.seed(31415) 
+        # np.random.seed(31415) 
 
         min_max_scaler = preprocessing.MinMaxScaler()
 
-        train_features, test_features, train_target, test_target = train_test_split(features_array, target_array, test_size = 0.3)
+        train_features, test_features, train_target, test_target = train_test_split(features_array, target_array, test_size = 0.3, shuffle=False)
 
         train_features = min_max_scaler.fit_transform(train_features)
         test_features = min_max_scaler.fit_transform(test_features)
@@ -37,13 +37,17 @@ class RandomForestsWrapper:
         random_forests_intance.fit(train_features, train_target)
         predictions = random_forests_intance.predict(test_features)
         errors = abs(predictions - test_target)
+        
+        start_test_date = dataframe.iloc[len(dataframe.index) - len(test_target)]
+        start_test_date = pd.to_datetime(start_test_date.name)
 
         return {
             'predictions': predictions,
             'errors': errors,
             'test_target': test_target,
             'price_data': price_data,
-            'target_data': target_data
+            'target_data': target_data,
+            'start_test_date': start_test_date
         }
     
     def fetch_original_column_from_df(self, analysis_df: pd.DataFrame, price_column: str):
