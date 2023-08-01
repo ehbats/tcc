@@ -20,3 +20,13 @@ GROUPS = [
             "group_columns": ["macd", "roc", "roc_perc", "momentum" , "chande"]
         }
 ]
+
+IBOVESPA = {
+    'bench': 'IBOVESPA',
+    'column': 'Date'
+}
+
+CDI = {
+    'bench': 'CDI',
+    'column': 'data'
+}

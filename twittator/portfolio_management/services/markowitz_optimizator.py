@@ -28,7 +28,7 @@ class MarkowitzOptimizator(Optimizator):
         size_difference = len(merged_price_dfs.index)-len(merged_prediction_dfs.index)
 
         merged_prediction_dfs['obtained_return'] = merged_prediction_dfs.apply(
-            self.get_row_expected_returns, 
+            self.get_row_returns, 
             axis=1, 
             price_dfs=merged_price_dfs,
             size_difference=size_difference,
@@ -45,7 +45,7 @@ class MarkowitzOptimizator(Optimizator):
 
         return merged_prediction_dfs
 
-    def get_row_expected_returns(
+    def get_row_returns(
             self, 
             row: pd.Series, 
             price_dfs: pd.DataFrame,
@@ -74,7 +74,7 @@ class MarkowitzOptimizator(Optimizator):
             row_dict = row.to_dict()
             expected_returns_list = list(row_dict.values())
 
-            desired_risk = self.format_desired_risk(desired_risk)
+            formatted_risk = self.format_desired_risk(desired_risk)
 
             weights = cp.Variable(len(expected_returns_list))
             covariance_matrix_as_constant = np.array(covariance_matrix)
@@ -94,7 +94,7 @@ class MarkowitzOptimizator(Optimizator):
                 [
                 cp.sum(weights) == 1, 
                 weights >= 0,
-                variance <= desired_risk
+                variance <= formatted_risk
                 ])
             problem.solve()
 
@@ -136,12 +136,14 @@ class MarkowitzOptimizator(Optimizator):
     def handle_count(self):
         if not hasattr(self, 'count'):
             self.count = 0
-            return True
-        if self.count < self.periods:
+        if self.count == 0:
             self.count += 1
             return True
         else:
-            self.count = 0
+            if self.count < self.periods -1:
+                self.count += 1
+            else:
+                self.count = 0
             return False
             
     def handle_weights(self, result_weights: list[float], reset: bool):
