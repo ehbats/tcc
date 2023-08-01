@@ -12,7 +12,7 @@ class RandomForestsWrapper:
     to a stock prices DataFrame. Because this is a very repetitive process,
     this class is useful to avoid lots of code.
     """
-    def run(self, dataframe: pd.DataFrame, target_column: str, price_column: str, columns_to_drop: list[str] = ['Open', 'High', 'Low', 'Close']):
+    def run(self, dataframe: pd.DataFrame, target_column: str, price_column: str, columns_to_drop: list[str] = ['Open', 'High', 'Low', 'Close'], ratio: float = 0.3):
 
         analysis_df = dataframe.copy(deep = True)
         price_data = self.fetch_original_column_from_df(analysis_df, price_column)
@@ -29,7 +29,7 @@ class RandomForestsWrapper:
 
         min_max_scaler = preprocessing.MinMaxScaler()
 
-        train_features, test_features, train_target, test_target = train_test_split(features_array, target_array, test_size = 0.3, shuffle=False)
+        train_features, test_features, train_target, test_target = train_test_split(features_array, target_array, test_size = ratio, shuffle=False)
 
         train_features = min_max_scaler.fit_transform(train_features)
         test_features = min_max_scaler.fit_transform(test_features)
