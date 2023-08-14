@@ -38,5 +38,5 @@ class GetNewsData():
         final_url = f'{base_url}hl={language}&gl={country}&ceid={ceid}'
 
         feed = feedparser.parse(final_url)
-
+        self.final_url = final_url
         return feed

@@ -40,6 +40,3 @@ class PopulatePolarity:
                 news.has_polarization = True
                 news.save()
                 polarity_object.save()
-
-instance = PopulatePolarity()
-instance.populate()

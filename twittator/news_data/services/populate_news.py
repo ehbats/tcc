@@ -42,16 +42,18 @@ class PopulateNewsData(GetNewsData, GetNewsContent):
             except:
                 raise ValidationError(f'The after date {after} is invalid!')
 
-        query, exists = Query.objects.get_or_create(
+        query, created = Query.objects.get_or_create(
             query = query, 
             topic = topic, 
             before = before, 
             after = after, 
             language= language, 
             country = country, 
-            ceid = ceid
+            ceid = ceid,
         )
 
+        query.url = self.final_url
+        query.save()
         for entry in entries:
             title = entry.title
             published_parsed = entry.published_parsed
@@ -99,11 +101,17 @@ class PopulateNewsData(GetNewsData, GetNewsContent):
         start_date = datetime.strptime(start_date, '%Y-%m-%d')
         end_date = datetime.strptime(end_date, '%Y-%m-%d')
         while start_date < end_date:
+            print(f'Attempting date {start_date}!!!')
             next_date = start_date + timedelta(days=2)
-            self.populate(
-                query=query,
-                before=datetime.strftime(next_date, '%Y-%m-%d'),
-                after=datetime.strftime(start_date, '%Y-%m-%d')
-            )
+            try:
+                self.populate(
+                    query=query,
+                    before=datetime.strftime(next_date, '%Y-%m-%d'),
+                    after=datetime.strftime(start_date, '%Y-%m-%d')
+                )
+            except Exception as error:
+                print(f'Failed date {start_date}!!!')
+                print(f'Detail: {error}')
             start_date = start_date + timedelta(days=1)
-            
+        
+        print(f'Finished running between dates {start_date} and {end_date}!!!')            
