@@ -22,11 +22,23 @@ GROUPS = [
 ]
 
 IBOVESPA = {
-    'bench': 'IBOVESPA',
-    'column': 'Date'
+    'bench': 'INDEX',
+    'bench_name': 'IBOVESPA',
+    'column': 'Close',
+    'date_column': 'Date',
+    'ticker': '^BVSP'
+}
+SP500 = {
+    'bench': 'INDEX',
+    'bench_name': 'S&P500',
+    'column': 'Close',
+    'date_column': 'Date',
+    'ticker': '^GSPC'
 }
 
 CDI = {
     'bench': 'CDI',
-    'column': 'data'
+    'bench_name': 'CDI',
+    'column': 'valor',
+    'date_column': 'data'
 }
