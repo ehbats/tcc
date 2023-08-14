@@ -7,6 +7,44 @@ import numpy as np
 import cvxpy as cp
 
 class MarkowitzOptimizator(Optimizator):
+    """
+    This class implements the markowitz optimization model for 
+    investment portfolios. That is:
+    Max(expected_return - gamma * variance)
+
+    Where the expected_return is the expected portfolio return
+    generated from the model predictions and the attempted weights,
+    gamma is a risk aversion parameter, and the variance is the variance
+    of the portfolio generated based on the covariance matrix and the
+    weights.
+
+    That objective function is subjected to the following constraints:
+    The sum of the weights must be equal to 1;
+    Each of the weights must be greater than equal to 0 (you cannot short sell
+    stocks);
+    The variance cannot be higher than the generated variance from the standard
+    deviation obtained from the desired risk param.
+
+    Inputs:
+    - price_dfs: list with the dataframes that contains the prie data for each
+    of the stocks
+    - dfs: list with the dataframes that contains the prediction data for each
+    of the stocks.
+    *The dataframes inside these lists will be merged for the analysis.*
+    - tickers: list of the tickers.
+    - prediction_column: str that determines which column of the 
+    param "dfs" is going to be used. Defaults to 'Predictions'.
+    - price_column: str that determines which column of the
+    param "price_dfs" is going to be used. Defaults to "Close".
+    - periods: int that determines for how many days the weights will
+    be held. Defaults to 5.
+    - initial_investment: The initial value of the capitalization that
+    will be used. Defaults to 1.
+
+    Returns:
+    The merged prediction dfs adding the columns of the obtained daily return
+    generated from the weights and the capitalization from the initial investment.
+    """
     def optimize(self, 
                  price_dfs: list[pd.DataFrame],
                  dfs: list[pd.DataFrame],
@@ -17,6 +55,11 @@ class MarkowitzOptimizator(Optimizator):
                  periods: int = 5,
                  initial_investment: int = 1,
                  ):
+        """
+        Method from the above class that optimizes the portfolio.
+        Preprocesses the dataframes and calls the get_row_returns,
+        which implements the strategy and gets the returns.
+        """
         self.count = 0
         self.tickers = tickers
         self.periods = periods
@@ -53,6 +96,10 @@ class MarkowitzOptimizator(Optimizator):
             desired_risk: float,
             price_column: str
         ):
+        """
+        Implements the equal weights based on expected
+        returns strategy.
+        """
         reset = self.handle_count()
 
         prediction_index = row.name
@@ -107,10 +154,20 @@ class MarkowitzOptimizator(Optimizator):
         return row_portfolio_return[0]
 
     def format_desired_risk(self, desired_risk: float):
+        """
+        Obtains the variance from the desired standard 
+        deviation. This is necessary because the standard
+        deviation returns a non-DCP function.
+        """
         desired_risk_as_var = (desired_risk ** 2) / 252
         return desired_risk_as_var
     
     def get_next_day_retuns(self, price_dfs: pd.DataFrame, current_price_index: int, price_column: str):
+        """
+        Gets the next day return for each of the stocks. These returns will be used on the get_row_returns
+        multiplicating these results by the weights. The result of this multiplication corresponds to the 
+        portfolio return on that date.
+        """
         next_index = current_price_index + 1
         new_df = pd.DataFrame(price_dfs.loc[                
             (price_dfs.index == current_price_index)
@@ -126,6 +183,9 @@ class MarkowitzOptimizator(Optimizator):
         return np.zeros((1, len(new_df.columns))).T
         
     def get_return_from_initial_investment(self, row: pd.Series, initial_investment: float, column: str, is_percentage: bool = False):
+        """
+        Gets the capitalization of the investment, based on the obtained returns of the portfolio.
+        """
         initial_investment = self.handle_initial_investment(initial_investment)
         if not is_percentage:
             self.initial_investment = initial_investment * (1 + row[column])
@@ -134,6 +194,11 @@ class MarkowitzOptimizator(Optimizator):
         return self.initial_investment
 
     def handle_count(self):
+        """
+        Handles the count to reset
+        the weights every n = periods
+        days.
+        """
         if not hasattr(self, 'count'):
             self.count = 0
         if self.count == 0:
@@ -147,6 +212,9 @@ class MarkowitzOptimizator(Optimizator):
             return False
             
     def handle_weights(self, result_weights: list[float], reset: bool):
+        """
+        Gets the weights based on the resets.
+        """
         if not hasattr(self, 'weights'):
             self.weights = result_weights
         elif reset:
@@ -154,6 +222,10 @@ class MarkowitzOptimizator(Optimizator):
         return self.weights
     
     def handle_initial_investment(self, initial_investment: float):
+        """
+        Simply generates a class attribute corresponding to the
+        initial investment.
+        """
         if not hasattr(self, 'initial_investment'):
             self.initial_investment = initial_investment
             return self.initial_investment

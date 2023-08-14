@@ -3,15 +3,48 @@ from portfolio_management.services.base_optimizator import Optimizator
 import numpy as np
 
 class EqualWeightsOptimizator(Optimizator):
+    """
+    This class implements an optimizator for a very simple investment
+    strategy: every n = periods lines, The optimizator selects the
+    stocks which have a positive predicted return in n days and equally
+    distributes these weights among these stocks. The strategy keeps
+    these weights untouched for n days, and then reevaluates with the
+    new expected returns for n days. n = periods defaults to 5.
+
+    Inputs:
+    - price_dfs: list with the dataframes that contains the prie data for each
+    of the stocks
+    - dfs: list with the dataframes that contains the prediction data for each
+    of the stocks.
+    *The dataframes inside these lists will be merged for the analysis.*
+    - tickers: list of the tickers.
+    - prediction_column: str that determines which column of the 
+    param "dfs" is going to be used. Defaults to 'Predictions'.
+    - price_column: str that determines which column of the
+    param "price_dfs" is going to be used. Defaults to "Close".
+    - periods: int that determines for how many days the weights will
+    be held. Defaults to 5.
+    - initial_investment: The initial value of the capitalization that
+    will be used. Defaults to 1.
+
+    Returns:
+    The merged prediction dfs adding the columns of the obtained daily return
+    generated from the weights and the capitalization from the initial investment.
+    """
     def optimize(self, 
                  price_dfs: list[pd.DataFrame],
                  dfs: list[pd.DataFrame],
-                 tickers: dict,
+                 tickers: list[str],
                  prediction_column: str = 'Predictions',
                  price_column: str = 'Close',
                  periods: int = 5,
                  initial_investment: int = 1,
         ):
+        """
+        Method from the above class that optimizes the portfolio.
+        Preprocesses the dataframes and calls the get_row_returns,
+        which implements the strategy and gets the returns.
+        """
         self.periods = periods
         self.initial_investment = initial_investment
 
@@ -45,6 +78,10 @@ class EqualWeightsOptimizator(Optimizator):
             size_difference: int,
             price_column: str
     ):
+        """
+        Implements the equal weights based on expected
+        returns strategy.
+        """
         reset = self.handle_count()
 
         prediction_index = row.name
@@ -70,6 +107,11 @@ class EqualWeightsOptimizator(Optimizator):
 
     
     def handle_count(self):
+        """
+        Handles the count to reset
+        the weights every n = periods
+        days.
+        """
         if not hasattr(self, 'count'):
             self.count = 0
         if self.count == 0:
@@ -83,12 +125,19 @@ class EqualWeightsOptimizator(Optimizator):
             return False
         
     def handle_initial_investment(self, initial_investment: float):
+        """
+        Simply generates a class attribute corresponding to the
+        initial investment.
+        """
         if not hasattr(self, 'initial_investment'):
             self.initial_investment = initial_investment
             return self.initial_investment
         return self.initial_investment
     
     def handle_weights(self, result_weights: list[float], reset: bool):
+        """
+        Gets the weights based on the resets.
+        """
         if not hasattr(self, 'weights'):
             self.weights = result_weights
         elif reset:
@@ -97,6 +146,11 @@ class EqualWeightsOptimizator(Optimizator):
     
         
     def get_next_day_retuns(self, price_dfs: pd.DataFrame, current_price_index: int, price_column: str):
+        """
+        Gets the next day return for each of the stocks. These returns will be used on the get_row_returns
+        multiplicating these results by the weights. The result of this multiplication corresponds to the 
+        portfolio return on that date.
+        """
         next_index = current_price_index + 1
         new_df = pd.DataFrame(price_dfs.loc[                
             (price_dfs.index == current_price_index)
@@ -112,6 +166,9 @@ class EqualWeightsOptimizator(Optimizator):
         return np.zeros((1, len(new_df.columns))).T
     
     def get_return_from_initial_investment(self, row: pd.Series, initial_investment: float, column: str, is_percentage: bool = False):
+        """
+        Gets the capitalization of the investment, based on the obtained returns of the portfolio.
+        """
         initial_investment = self.handle_initial_investment(initial_investment)
         if not is_percentage:
             self.initial_investment = initial_investment * (1 + row[column])

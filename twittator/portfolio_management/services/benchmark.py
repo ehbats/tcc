@@ -9,6 +9,30 @@ from yahoo_data.services.get_price_data import GetPriceData
 from portfolio_management.services.get_stock_pnl import StockPnLCalculator
 
 class BenchmarkComparator(MarkowitzOptimizator):
+    """
+    This class generates times series for the benchmarks, both for the values
+    and for the capitalization of the returns based on an initial investment.
+    Currently, the possible benchmarks are CDI or SELIC, the basic interest rate
+    for the brazilian economy, IBOVESPA, the main brazilian stock market indicator
+    and the S&P500 if the user wants to have an offshore benchmark.
+    The user may use the get_benchmark_data, which calls the other methods in order
+    to get the series, based on the identificator (benchmark input).
+    Each of these methods returns a dataframe to the get_benchmark_data, which 
+    returns the dataframe to the user.
+    
+    Inputs:
+    start_date: The start date from which the benchmark data will be obtained.
+    end_date: The final date from which the benchmark data will be obtained.
+    benchmark: Identifies which of the benchmarks will be used. Can be either
+    CDI, SELIC, IBOV, IBOVESPA or S&P
+    initial_investment: Determines the initial value of the capitalization with
+    which the returns will be calculated. Defaults to 1.
+    ibov_column: The column of the yfinance dataframe that will be used to calculate
+    the capitalization. Defaults to 'Close'.
+
+    Returns:
+    Pandas DataFrame with the benchmark data and the capitalization.
+    """
     def get_benchmark_data(
             self, 
             start_date: date, 
