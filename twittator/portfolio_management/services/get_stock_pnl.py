@@ -17,6 +17,7 @@ class StockPnLCalculator:
     to calculate the daily returns. Example: 'Open', 'Close'
     periods: determines the number of days before the current date
     that will be used to calculate PnL. Defaults to 1 (daily returns).
+    fillna: Determines if the column have the NaN values filled with 0 or not.
 
     Returns:
     Pandas DataFrame with a new column, with the daily returns
@@ -27,7 +28,10 @@ class StockPnLCalculator:
         price_data: pd.DataFrame,
         column: str,
         periods: int = 1,
+        fillna: bool = False,
     ):
         price_data = price_data.copy(deep = True)
         price_data[f'{column} PnL {periods} days'] = price_data[column].pct_change(periods=periods)
+        if fillna:
+            price_data[f'{column} PnL {periods} days'] = price_data[f'{column} PnL {periods} days'].fillna(0)
         return price_data
