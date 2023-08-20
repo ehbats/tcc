@@ -10,11 +10,12 @@ class KaggleNews(models.Model):
     description = models.TextField(default='')
     has_description = models.BooleanField(default=True)
     source = models.TextField(default='')
-    category = models.TextField(default='BUSINESS')
+    category = models.TextField(default='MISSING_CATEGORY')
     source = models.TextField(default='')
-    pubdate = models.DateField()
+    pubdate = models.DateField(auto_now_add=True)
     country = models.TextField(choices=CountryChoices.choices, default=CountryChoices.BRZ)
     kaggle_url = models.TextField(default='')
+    kaggle_name = models.TextField(default='')
     has_polarization = models.BooleanField(default = False)
 
     class Meta:

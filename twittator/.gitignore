@@ -139,3 +139,4 @@ GitHub.sublime-settings
 
 # POPULATOR FILES
 *.json
+*.csv
