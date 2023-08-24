@@ -10,7 +10,7 @@ class KaggleNews(models.Model):
     description = models.TextField(default='')
     has_description = models.BooleanField(default=True)
     source = models.TextField(default='')
-    category = models.TextField(default='MISSING_CATEGORY')
+    category = models.TextField(default='MISSING_CATEGORY', db_index = True)
     source = models.TextField(default='')
     pubdate = models.DateField(auto_now_add=True)
     country = models.TextField(choices=CountryChoices.choices, default=CountryChoices.BRZ)

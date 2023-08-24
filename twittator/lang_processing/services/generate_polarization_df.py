@@ -37,7 +37,7 @@ class GeneratePolarizationDataFrame:
         
         return df
 
-    def get_news_n_days_prior(self, date, ticker: str, periods: int = 5):
+    def get_news_n_days_prior(self, date, query: dict = {}, periods: int = 5):
         final_date = pd.to_datetime(date)
         start_date = final_date - timedelta(days=periods)
 
@@ -46,8 +46,9 @@ class GeneratePolarizationDataFrame:
         polarity_filter = Polarity.objects.filter(
             news_pubdate__lte = final_date,
             news_pubdate__gte = start_date,
-            news_query__icontains = ticker
+            **query
         )
+        
         if polarity_filter.exists():
             for polarity in polarity_filter:
                 parsed_polarity = json.loads(polarity.polarization_list)
