@@ -95,23 +95,28 @@ class GetPolarization:
         backup_polarity = self.full_sentic
         token_amount = len(tokens)
         polarity_list = []
+        sentic_polarization_list = []
         for token in tokens:
             failed_polarity = False
             try:
                 polarity_list.append(bsn.polarity_value(token))
+                sentics = bsn.sentics(token)
+                sentic_polarization = (sentics['pleasantness'] + abs(sentics['attention']) - abs(sentics['sensitivity']) + sentics['aptitude']) / 3
+                sentic_polarization_list.append(sentic_polarization)
+                print(sentic_polarization)
             except:
                 failed_polarity = True
             if failed_polarity:
                 try:
                     polarity_list.append(backup_polarity.polarity_value(token))
                 except:
-                    failed_final = True
+                    pass
                 
         polarity_list = [float(polarity) if type(polarity) == str else polarity for polarity in polarity_list]
 
         mean_polarity = sum(polarity_list) / token_amount
 
-        return (mean_polarity, polarity_list)
+        return (mean_polarity, polarity_list, sentic_polarization_list)
 
     def run_with_default_params(
             self,
@@ -123,6 +128,6 @@ class GetPolarization:
         and the list of the calculated polarities.
         """
         lemmatized_tokenized_no_stopwords = self.text_preprocessing(text)
-        polarization, polarity_list = self.get_mean_polarity(lemmatized_tokenized_no_stopwords)
+        polarization, polarity_list, sentic_polarization_list = self.get_mean_polarity(lemmatized_tokenized_no_stopwords)
 
-        return lemmatized_tokenized_no_stopwords, polarization, polarity_list
+        return lemmatized_tokenized_no_stopwords, polarization, polarity_list, sentic_polarization_list

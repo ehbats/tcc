@@ -25,7 +25,7 @@ class PopulatePolarity:
         for news in news_data:
             news_text = f'{news.title} {news.description}'
             
-            lemma, mean_polarization, polarity_list = polarization_calculator.run_with_default_params(news_text)
+            lemma, mean_polarization, polarity_list, sentic_polarization_list = polarization_calculator.run_with_default_params(news_text)
             
             polarity_object, created = Polarity.objects.get_or_create(
                 kagglenews_id = news
@@ -34,6 +34,7 @@ class PopulatePolarity:
                 polarity_object.relevant_words = json.dumps(lemma, ensure_ascii= False)
                 polarity_object.mean_polarization = mean_polarization
                 polarity_object.polarization_list = json.dumps(polarity_list)
+                polarity_object.sentic_polarization_list = json.dumps(sentic_polarization_list)
                 polarity_object.news_pubdate = news.pubdate
                 # polarity_object.news_query = news.query_id.query
                 news.has_polarization = True

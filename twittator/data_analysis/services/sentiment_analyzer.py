@@ -25,7 +25,7 @@ class SentimentAnalyzer:
         self.vpos_ratio_list.append(result_ratios['very_negative_ratio'])
 
     def generate_ratios(self, date: date | str, query: dict, periods: int):
-        polarization_list = GeneratePolarizationDataFrame().get_news_n_days_prior(date=date, query=query, periods=periods)
+        polarization_list, sentic_polarization_list = GeneratePolarizationDataFrame().get_news_n_days_prior(date=date, query=query, periods=periods)
         
         very_negative_list = []
         negative_list = []

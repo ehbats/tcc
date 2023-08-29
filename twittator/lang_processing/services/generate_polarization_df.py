@@ -42,6 +42,7 @@ class GeneratePolarizationDataFrame:
         start_date = final_date - timedelta(days=periods)
 
         date_polarity_list = []
+        date_sentic_polarity_list = []
 
         polarity_filter = Polarity.objects.filter(
             news_pubdate__lte = final_date,
@@ -53,9 +54,12 @@ class GeneratePolarizationDataFrame:
             for polarity in polarity_filter:
                 parsed_polarity = json.loads(polarity.polarization_list)
                 date_polarity_list.append(parsed_polarity)
+                parsed_sentic_polarity = json.loads(polarity.sentic_polarization_list)
+                date_sentic_polarity_list.append(parsed_sentic_polarity)
         final_list = list(itertools.chain(*date_polarity_list))
-
-        return final_list
+        sentic_list = list(itertools.chain(*date_sentic_polarity_list))
+        
+        return final_list, sentic_list
 
 # instance = GeneratePolarizationDataFrame()
 # price_df = GetPriceData().get_price_data(
