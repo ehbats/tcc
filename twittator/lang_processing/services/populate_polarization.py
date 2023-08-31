@@ -20,6 +20,7 @@ class PopulatePolarity:
         """
         polarization_calculator = GetPolarization()
         news_data = KaggleNews.objects.filter(
+            category='BUSINESS',
             has_polarization = False
         )
         for news in news_data:

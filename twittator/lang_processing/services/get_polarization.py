@@ -103,7 +103,6 @@ class GetPolarization:
                 sentics = bsn.sentics(token)
                 sentic_polarization = (sentics['pleasantness'] + abs(sentics['attention']) - abs(sentics['sensitivity']) + sentics['aptitude']) / 3
                 sentic_polarization_list.append(sentic_polarization)
-                print(sentic_polarization)
             except:
                 failed_polarity = True
             if failed_polarity:
