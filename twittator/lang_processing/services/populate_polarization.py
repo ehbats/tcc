@@ -5,9 +5,8 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "twittator.settings")
 django.setup()
 from lang_processing.models.polarity import Polarity
-from news_data.models.query import Query
-from news_data.models.news import News
-from get_polarization import GetPolarization
+from news_data.models.kaggle_news import KaggleNews
+from lang_processing.services.get_polarization import GetPolarization
 import json
 
 class PopulatePolarity:
@@ -20,23 +19,25 @@ class PopulatePolarity:
         a foreign key.
         """
         polarization_calculator = GetPolarization()
-        news_data = News.objects.filter(
+        news_data = KaggleNews.objects.filter(
+            category='BUSINESS',
             has_polarization = False
         )
         for news in news_data:
             news_text = f'{news.title} {news.description}'
             
-            lemma, mean_polarization, polarity_list = polarization_calculator.run_with_default_params(news_text)
+            lemma, mean_polarization, polarity_list, sentic_polarization_list = polarization_calculator.run_with_default_params(news_text)
             
             polarity_object, created = Polarity.objects.get_or_create(
-                news_id = news
+                kagglenews_id = news
             )
             if created:
                 polarity_object.relevant_words = json.dumps(lemma, ensure_ascii= False)
                 polarity_object.mean_polarization = mean_polarization
                 polarity_object.polarization_list = json.dumps(polarity_list)
+                polarity_object.sentic_polarization_list = json.dumps(sentic_polarization_list)
                 polarity_object.news_pubdate = news.pubdate
-                polarity_object.news_query = news.query_id.query
+                # polarity_object.news_query = news.query_id.query
                 news.has_polarization = True
                 news.save()
                 polarity_object.save()

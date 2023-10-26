@@ -10,6 +10,7 @@ from news_data.models.news import News
 from news_data.models.query import Query
 from datetime import datetime, timedelta
 from django.core.exceptions import ValidationError
+from time import time
 
 class PopulateNewsData(GetNewsData, GetNewsContent):
     def populate(
@@ -100,6 +101,7 @@ class PopulateNewsData(GetNewsData, GetNewsContent):
         """
         start_date = datetime.strptime(start_date, '%Y-%m-%d')
         end_date = datetime.strptime(end_date, '%Y-%m-%d')
+        start_time = time()
         while start_date < end_date:
             print(f'Attempting date {start_date}!!!')
             next_date = start_date + timedelta(days=2)
@@ -113,5 +115,7 @@ class PopulateNewsData(GetNewsData, GetNewsContent):
                 print(f'Failed date {start_date}!!!')
                 print(f'Detail: {error}')
             start_date = start_date + timedelta(days=1)
-        
-        print(f'Finished running between dates {start_date} and {end_date}!!!')            
+        end_time = time()
+        print(f'Finished running between dates {start_date} and {end_date}!!!')
+
+        print(f"Total process time: {round(end_time - start_time, 2)} seconds.")

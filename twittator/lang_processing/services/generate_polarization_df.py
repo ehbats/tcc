@@ -27,6 +27,10 @@ class GeneratePolarizationDataFrame:
     periods: amount of days that will be used to calculate the
     polarization. Defaults to 1.
     """
+    def __init__(self, base_query: dict = None):
+        if base_query is not None:
+            self.base_queryset = Polarity.objects.filter(**base_query)
+
     def generate_polarization_for_ticker(
             self,
             df: pd.DataFrame,
@@ -37,33 +41,50 @@ class GeneratePolarizationDataFrame:
         
         return df
 
-    def get_news_n_days_prior(self, date, ticker: str, periods: int = 5):
+    def get_news_n_days_prior(self, date, query: dict = {}, periods: int = 5):
         final_date = pd.to_datetime(date)
         start_date = final_date - timedelta(days=periods)
 
         date_polarity_list = []
+        date_sentic_polarity_list = []
 
         polarity_filter = Polarity.objects.filter(
             news_pubdate__lte = final_date,
             news_pubdate__gte = start_date,
-            news_query__icontains = ticker
+            **query
         )
+        
         if polarity_filter.exists():
             for polarity in polarity_filter:
                 parsed_polarity = json.loads(polarity.polarization_list)
                 date_polarity_list.append(parsed_polarity)
+                parsed_sentic_polarity = json.loads(polarity.sentic_polarization_list)
+                date_sentic_polarity_list.append(parsed_sentic_polarity)
         final_list = list(itertools.chain(*date_polarity_list))
+        sentic_list = list(itertools.chain(*date_sentic_polarity_list))
+        
+        return final_list, sentic_list, date_polarity_list, date_sentic_polarity_list
 
-        return final_list
+    def get_news_n_days_prior_from_base_query(self, date, query: dict = {}, periods: int = 5):
+        final_date = pd.to_datetime(date)
+        start_date = final_date - timedelta(days=periods)
 
-# instance = GeneratePolarizationDataFrame()
-# price_df = GetPriceData().get_price_data(
-#     'BPAC11.SA',
-#     '2023-01-01',
-#     '2023-01-15'
-# )
-# instance.generate_polarization_for_ticker(
-#     price_df,
-#     'BPAC11',
-#     1
-# )
+        date_polarity_list = []
+        date_sentic_polarity_list = []
+
+        polarity_filter = self.base_queryset.filter(
+            news_pubdate__lte = final_date,
+            news_pubdate__gte = start_date,
+            **query
+        )
+        
+        if polarity_filter.exists():
+            for polarity in polarity_filter:
+                parsed_polarity = json.loads(polarity.polarization_list)
+                date_polarity_list.append(parsed_polarity)
+                parsed_sentic_polarity = json.loads(polarity.sentic_polarization_list)
+                date_sentic_polarity_list.append(parsed_sentic_polarity)
+        final_list = list(itertools.chain(*date_polarity_list))
+        sentic_list = list(itertools.chain(*date_sentic_polarity_list))
+
+        return final_list, sentic_list, date_polarity_list, date_sentic_polarity_list
