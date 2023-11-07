@@ -1,16 +1,23 @@
-
-import numpy as np
+from keras.optimizers import RMSprop
+from keras.models import Sequential
+from keras.layers import Dense
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn import preprocessing
+import itertools
 
-class RandomForestsWrapper:
-    """
-    This wrapper applies the Random Forests Regressor
-    to a stock prices DataFrame. Because this is a very repetitive process,
-    this class is useful to avoid lots of code.
-    """
+class NeuralNetworksWrapper:
+    def __init__(self, input_shape):
+        optimizer = RMSprop(0.001)
+        self.model = Sequential()
+        self.model.add(Dense(64, input_shape=input_shape, activation='relu'))
+        self.model.add(Dense(64, activation='relu'))
+        self.model.add(Dense(64, activation='sigmoid'))
+        self.model.add(Dense(1))
+        self.model.compile(optimizer=optimizer, loss='mse', metrics=['mae'])
+
     def run(self, dataframe: pd.DataFrame, target_column: str, price_column: str, columns_to_drop: list[str] = ['Open', 'High', 'Low', 'Close'], ratio: float = 0.3):
 
         analysis_df = dataframe.copy(deep = True)
@@ -32,9 +39,8 @@ class RandomForestsWrapper:
 
         # train_features = min_max_scaler.fit_transform(train_features)
         # test_features = min_max_scaler.fit_transform(test_features)
-        random_forests_intance = RandomForestRegressor(random_state=0)
-        random_forests_intance.fit(train_features, train_target)
-        predictions = random_forests_intance.predict(test_features)
+        self.model.fit(train_features, train_target, epochs=10, verbose=0)
+        predictions = list(itertools.chain(*self.model.predict(test_features).tolist()))
         errors = abs(predictions - test_target)
         
         start_test_date = dataframe.iloc[len(dataframe.index) - len(test_target)]

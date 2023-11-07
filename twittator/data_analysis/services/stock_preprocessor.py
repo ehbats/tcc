@@ -34,11 +34,11 @@ class StockPreprocessor:
                     columns_to_leave = ['Open', 'High', 'Low', 'Close'],
                 )
             else:
-                 df_after_pca = GetPriceData(
-                      ticker,
-                      start_date,
-                      end_date
-                 )
+                df_after_pca = GetPriceData().get_price_data(
+                    ticker,
+                    start_date,
+                    end_date
+                )
             df_n_days = StockPnLCalculator().calculate_pnl(
                 df_after_pca,
                 price_column,
