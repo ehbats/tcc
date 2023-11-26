@@ -6,9 +6,9 @@ class SharpeCalculator:
         benchmark_return = self.__calculate_return_pct(benchmark_data[capitalization_column])
         portfolio_std = self.__calculate_std(portfolio_data[capitalization_column])
         
-        self.sharpe_ratio = (portfolio_return - benchmark_return) / portfolio_std
+        sharpe_ratio = (portfolio_return - benchmark_return) / portfolio_std
 
-        return self.sharpe_ratio
+        return sharpe_ratio, portfolio_std, portfolio_return, benchmark_return
 
     def __calculate_std(self, capitalization_series: pd.Series):
         return capitalization_series.std()

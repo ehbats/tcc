@@ -1,6 +1,7 @@
 from keras.optimizers import RMSprop
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, LSTM
+import tensorflow as tf
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -10,12 +11,10 @@ import itertools
 
 class NeuralNetworksWrapper:
     def __init__(self, input_shape):
-        optimizer = RMSprop(0.001)
+        optimizer = 'adam'
         self.model = Sequential()
-        self.model.add(Dense(64, input_shape=input_shape, activation='relu'))
-        self.model.add(Dense(64, activation='relu'))
-        self.model.add(Dense(64, activation='sigmoid'))
-        self.model.add(Dense(1))
+        self.model.add(LSTM(64, input_shape=input_shape))
+        self.model.add(Dense(1, input_shape=input_shape))
         self.model.compile(optimizer=optimizer, loss='mse', metrics=['mae'])
 
     def run(self, dataframe: pd.DataFrame, target_column: str, price_column: str, columns_to_drop: list[str] = ['Open', 'High', 'Low', 'Close'], ratio: float = 0.3):

@@ -159,7 +159,7 @@ class MarkowitzOptimizator(Optimizator):
         deviation. This is necessary because the standard
         deviation returns a non-DCP function.
         """
-        desired_risk_as_var = (desired_risk ** 2) / 252
+        desired_risk_as_var = (desired_risk ** 2)
         return desired_risk_as_var
     
     def get_next_day_retuns(self, price_dfs: pd.DataFrame, current_price_index: int, price_column: str):
